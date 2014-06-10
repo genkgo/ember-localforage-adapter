@@ -105,35 +105,36 @@
       */
     find: function(store, type, id, opts) {
       var adapter = this;
-      var allowRecursive = true;
-      var namespace = this._namespaceForType(type);
-
-      /**
-       * In the case where there are relationships, this method is called again
-       * for each relation. Given the relations have references to the main
-       * object, we use allowRecursive to avoid going further into infinite
-       * recursiveness.
-       *
-       * Concept from ember-indexdb-adapter
-       */
-      if (opts && typeof opts.allowRecursive !== 'undefined') {
-        allowRecursive = opts.allowRecursive;
-      }
 
       return new Ember.RSVP.Promise(function(resolve, reject) {
-        var record = Ember.A(namespace.records[id]);
+          var allowRecursive = true;
+          var namespace = adapter._namespaceForType(type).then (function () {
+        	  /**
+               * In the case where there are relationships, this method is called again
+               * for each relation. Given the relations have references to the main
+               * object, we use allowRecursive to avoid going further into infinite
+               * recursiveness.
+               *
+               * Concept from ember-indexdb-adapter
+               */
+              if (opts && typeof opts.allowRecursive !== 'undefined') {
+                allowRecursive = opts.allowRecursive;
+              }
+              
+            var record = Ember.A(namespace.records[id]);
 
-        if (allowRecursive && record) {
-          adapter.loadRelationships(type, record).then(function(finalRecord) {
-            resolve(finalRecord);
+            if (allowRecursive && record) {
+              adapter.loadRelationships(type, record).then(function(finalRecord) {
+                resolve(finalRecord);
+              });
+            } else {
+              if (!record) {
+                reject();
+              } else {
+                resolve(record);
+              }
+            }
           });
-        } else {
-          if (!record) {
-            reject();
-          } else {
-            resolve(record);
-          }
-        }
       });
 
       resolve(record);
@@ -141,16 +142,17 @@
 
     findMany: function (store, type, ids) {
       var adapter = this;
-      var namespace = this._namespaceForType(type);
 
       return new Ember.RSVP.Promise(function(resolve, reject) {
-        var results = [];
+    	adapter._namespaceForType(type).then (function (namespace) {
+    		var results = [];
 
-        for (var i = 0; i < ids.length; i++) {
-          results.push(Ember.copy(namespace.records[ids[i]]));
-        }
+            for (var i = 0; i < ids.length; i++) {
+              results.push(Ember.copy(namespace.records[ids[i]]));
+            }
 
-        resolve(results);
+            resolve(results);
+    	});
       }).then(function(records) {
         if (records.get('length')) {
           return adapter.loadRelationshipsForMany(type, records);
@@ -175,14 +177,19 @@
     //
     //    { complete: true, name: /foo|bar/ }
     findQuery: function (store, type, query, recordArray) {
-      var namespace = this._namespaceForType(type),
-          results = this.query(namespace.records, query);
-
-      if (results.get('length')) {
-        results = this.loadRelationshipsForMany(type, results);
-      }
-
-      return Ember.RSVP.resolve(results);
+        var adapter = this;
+    	return new Ember.RSVP.Promise(function(resolve, reject) {
+    	  adapter._namespaceForType(type).then (function (namespace) {
+	    	  results = this.query(namespace.records, query);
+	
+	          if (results.get('length')) {
+	            results = adapter.loadRelationshipsForMany(type, results);
+	          }
+	
+	          resolve(results);
+    	 });
+      })
+          
     },
 
     query: function (records, query) {
@@ -207,43 +214,61 @@
     },
 
     findAll: function (store, type) {
-      var namespace = this._namespaceForType(type),
-          results = [];
+    	var adapter = this;
+    	return new Ember.RSVP.Promise(function(resolve, reject) {
+    	  adapter._namespaceForType(type).then (function (namespace) {
+    		  var results = [];
 
-      for (var id in namespace.records) {
-        results.push(Ember.copy(namespace.records[id]));
-      }
-      return Ember.RSVP.resolve(results);
+		      for (var id in namespace.records) {
+		        results.push(Ember.copy(namespace.records[id]));
+		      }
+		      resolve(results);
+    	  });
+    	});
     },
 
     createRecord: function (store, type, record) {
-      var namespaceRecords = this._namespaceForType(type),
-          recordHash = record.serialize({includeId: true});
-
-      namespaceRecords.records[recordHash.id] = recordHash;
-
-      this.persistData(type, namespaceRecords);
-      return Ember.RSVP.resolve();
+    	var adapter = this;
+    	return new Ember.RSVP.Promise(function(resolve, reject) {
+    		adapter._namespaceForType(type).then (function (namespaceRecords) {
+    			var recordHash = record.serialize({includeId: true});
+    			
+    		      namespaceRecords.records[recordHash.id] = recordHash;
+    		      console.log('before persist');
+    		      adapter.persistData(type, namespaceRecords).then (function () {
+    		    	  console.log('persisted');
+    		    	  resolve();
+    		      });
+    		});
+    	});
     },
 
     updateRecord: function (store, type, record) {
-      var namespaceRecords = this._namespaceForType(type),
-          id = record.get('id');
-
-      namespaceRecords.records[id] = record.serialize({ includeId: true });
-
-      this.persistData(type, namespaceRecords);
-      return Ember.RSVP.resolve();
+    	var adapter = this;
+    	return new Ember.RSVP.Promise(function(resolve, reject) {
+    		adapter._namespaceForType(type).then (function (namespaceRecords) {
+		         var id = record.get('id');
+		
+		      namespaceRecords.records[id] = record.serialize({ includeId: true });
+		
+		      adapter.persistData(type, namespaceRecords);
+		      resolve();
+    		});
+    	});
     },
 
     deleteRecord: function (store, type, record) {
-      var namespaceRecords = this._namespaceForType(type),
-          id = record.get('id');
+    	var adapter = this;
+    	return new Ember.RSVP.Promise(function(resolve, reject) {
+    		adapter._namespaceForType(type).then (function (namespaceRecords) {
+		         var id = record.get('id');
+		
+		      delete namespaceRecords.records[id];
 
-      delete namespaceRecords.records[id];
-
-      this.persistData(type, namespaceRecords);
-      return Ember.RSVP.resolve();
+		      adapter.persistData(type, namespaceRecords);
+		      resolve();
+    		});
+    	});
     },
 
     generateIdForRecord: function () {
@@ -257,24 +282,39 @@
     },
 
     loadData: function () {
-      var storage = window.localforage.getItem(this.adapterNamespace());
-      return storage ? JSON.parse(storage) : {};
+    	var adapter = this;
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+  	      window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
+  	    	resolve(storage ? JSON.parse(storage) : {});
+  	      }, reject);
+        });
     },
 
     persistData: function(type, data) {
-      var modelNamespace = this.modelNamespace(type),
-          localStorageData = this.loadData();
+    	var adapter = this;
+      var modelNamespace = this.modelNamespace(type);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+    	  adapter.loadData().then(function (localStorageData) {
+	    	  localStorageData[modelNamespace] = data;
+	
+	          window.localforage.setItem(adapter.adapterNamespace(), JSON.stringify(localStorageData)).then (function () {
+	        	  resolve();
+	          });
+	      });
+      });
 
-      localStorageData[modelNamespace] = data;
-
-      window.localforage.setItem(this.adapterNamespace(), JSON.stringify(localStorageData));
+     
     },
 
     _namespaceForType: function (type) {
-      var namespace = this.modelNamespace(type),
-          storage   = window.localforage.getItem(this.adapterNamespace());
-
-      return storage ? JSON.parse(storage)[namespace] || {records: {}} : {records: {}};
+      var namespace = this.modelNamespace(type);
+      var adapter = this;
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+	      window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
+	    	  var ns = storage ? JSON.parse(storage)[namespace] || {records: {}} : {records: {}};
+	    	  resolve(ns);
+	      }, reject);
+      });
     },
 
     modelNamespace: function(type) {
