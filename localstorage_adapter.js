@@ -105,10 +105,11 @@
       */
     find: function(store, type, id, opts) {
       var adapter = this;
+      console.log(type);
 
       return new Ember.RSVP.Promise(function(resolve, reject) {
           var allowRecursive = true;
-          var namespace = adapter._namespaceForType(type).then (function () {
+         adapter._namespaceForType(type).then (function (namespace) {
         	  /**
                * In the case where there are relationships, this method is called again
                * for each relation. Given the relations have references to the main
