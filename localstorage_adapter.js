@@ -105,7 +105,6 @@
       */
     find: function(store, type, id, opts) {
       var adapter = this;
-      console.log(type);
 
       return new Ember.RSVP.Promise(function(resolve, reject) {
           var allowRecursive = true;
@@ -124,12 +123,12 @@
               
             var record = Ember.A(namespace.records[id]);
 
-            if (allowRecursive && record) {
+            if (allowRecursive) {
               adapter.loadRelationships(type, record).then(function(finalRecord) {
                 resolve(finalRecord);
               });
             } else {
-              if (!record) {
+              if (!record.length) {
                 reject();
               } else {
                 resolve(record);
@@ -137,8 +136,6 @@
             }
           });
       });
-
-      resolve(record);
     },
 
     findMany: function (store, type, ids) {
