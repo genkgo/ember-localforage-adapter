@@ -257,7 +257,7 @@
     },
 
     loadData: function () {
-      var storage = localStorage.getItem(this.adapterNamespace());
+      var storage = window.localforage.getItem(this.adapterNamespace());
       return storage ? JSON.parse(storage) : {};
     },
 
@@ -267,12 +267,12 @@
 
       localStorageData[modelNamespace] = data;
 
-      localStorage.setItem(this.adapterNamespace(), JSON.stringify(localStorageData));
+      window.localforage.setItem(this.adapterNamespace(), JSON.stringify(localStorageData));
     },
 
     _namespaceForType: function (type) {
       var namespace = this.modelNamespace(type),
-          storage   = localStorage.getItem(this.adapterNamespace());
+          storage   = window.localforage.getItem(this.adapterNamespace());
 
       return storage ? JSON.parse(storage)[namespace] || {records: {}} : {records: {}};
     },
