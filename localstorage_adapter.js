@@ -234,9 +234,7 @@
     			var recordHash = record.serialize({includeId: true});
     			
     		      namespaceRecords.records[recordHash.id] = recordHash;
-    		      console.log('before persist');
     		      adapter.persistData(type, namespaceRecords).then (function () {
-    		    	  console.log('persisted');
     		    	  resolve();
     		      });
     		});
@@ -296,7 +294,6 @@
       return new Ember.RSVP.Promise(function(resolve, reject) {
     	  adapter.loadData().then(function (localStorageData) {
 	    	  localStorageData[modelNamespace] = data;
-	
 	          window.localforage.setItem(adapter.adapterNamespace(), JSON.stringify(localStorageData)).then (function () {
 	        	  resolve();
 	          });
