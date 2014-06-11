@@ -2,6 +2,26 @@
 /*global DS*/
 (function () {
   'use strict';
+  
+  DS.LSQueue = Ember.Object.extend ({
+		
+		queue : [new Ember.RSVP.resolve()],
+		
+		attach : function (callback) {
+			var self = this;
+			var queueKey = self.queue.length;
+			
+			self.queue[queueKey] = new Ember.RSVP.Promise(function(resolve, reject) {
+				self.queue[queueKey - 1].then (function () {
+					callback(resolve, reject);
+				});
+			});
+			
+			return self.queue[queueKey];
+		},
+		
+
+	});
 
   DS.LSSerializer = DS.JSONSerializer.extend({
 
@@ -95,6 +115,8 @@
   });
 
   DS.LSAdapter = DS.Adapter.extend(Ember.Evented, {
+	 queue : DS.LSQueue.create(),
+	 
     /**
       This is the main entry point into finding records. The first parameter to
       this method is the model's name as a string.
@@ -128,7 +150,7 @@
                 resolve(finalRecord);
               });
             } else {
-              if (!record.length) {
+              if (!record) {
                 reject();
               } else {
                 resolve(record);
@@ -227,7 +249,7 @@
 
     createRecord: function (store, type, record) {
     	var adapter = this;
-    	return new Ember.RSVP.Promise(function(resolve, reject) {
+    	return this.queue.attach(function(resolve, reject) {
     		adapter._namespaceForType(type).then (function (namespaceRecords) {
     			var recordHash = record.serialize({includeId: true});
     			
@@ -241,21 +263,22 @@
 
     updateRecord: function (store, type, record) {
     	var adapter = this;
-    	return new Ember.RSVP.Promise(function(resolve, reject) {
+    	return this.queue.attach(function(resolve, reject) {
     		adapter._namespaceForType(type).then (function (namespaceRecords) {
 		         var id = record.get('id');
 		
 		      namespaceRecords.records[id] = record.serialize({ includeId: true });
 		
-		      adapter.persistData(type, namespaceRecords);
-		      resolve();
+		      adapter.persistData(type, namespaceRecords).then (function () {
+		    	  resolve();
+		      });
     		});
     	});
     },
 
     deleteRecord: function (store, type, record) {
     	var adapter = this;
-    	return new Ember.RSVP.Promise(function(resolve, reject) {
+    	return this.queue.attach(function(resolve, reject) {
     		adapter._namespaceForType(type).then (function (namespaceRecords) {
 		         var id = record.get('id');
 		
@@ -282,7 +305,7 @@
         return new Ember.RSVP.Promise(function(resolve, reject) {
   	      window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
   	    	resolve(storage ? JSON.parse(storage) : {});
-  	      }, reject);
+  	      });
         });
     },
 
@@ -308,7 +331,7 @@
 	      window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
 	    	  var ns = storage ? JSON.parse(storage)[namespace] || {records: {}} : {records: {}};
 	    	  resolve(ns);
-	      }, reject);
+	      });
       });
     },
 
