@@ -200,7 +200,7 @@
         var adapter = this;
     	return new Ember.RSVP.Promise(function(resolve, reject) {
     	  adapter._namespaceForType(type).then (function (namespace) {
-	    	  results = this.query(namespace.records, query);
+	    	  var results = adapter.query(namespace.records, query);
 	
 	          if (results.get('length')) {
 	            results = adapter.loadRelationshipsForMany(type, results);
