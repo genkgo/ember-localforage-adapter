@@ -3,7 +3,7 @@
 (function () {
   'use strict';
   
-  DS.LSQueue = Ember.Object.extend ({
+  DS.LFQueue = Ember.Object.extend ({
 		
 		queue : [new Ember.RSVP.resolve()],
 		
@@ -23,7 +23,7 @@
 
 	});
 
-  DS.LSSerializer = DS.JSONSerializer.extend({
+  DS.LFSerializer = DS.JSONSerializer.extend({
 
     serializeHasMany: function(record, json, relationship) {
       var key = relationship.key,
@@ -114,8 +114,8 @@
 
   });
 
-  DS.LSAdapter = DS.Adapter.extend(Ember.Evented, {
-	 queue : DS.LSQueue.create(),
+  DS.LFAdapter = DS.Adapter.extend(Ember.Evented, {
+	 queue : DS.LFQueue.create(),
 	 
     /**
       This is the main entry point into finding records. The first parameter to
@@ -297,7 +297,7 @@
     // private
 
     adapterNamespace: function () {
-      return this.get('namespace') || 'DS.LSAdapter';
+      return this.get('namespace') || 'DS.LFAdapter';
     },
 
     loadData: function () {

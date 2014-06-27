@@ -1,73 +1,40 @@
-Ember Data Local Storage Adapter
+Ember Data Localforage Adapter
 ================================
 
-Store your ember application data in localStorage.
+Store your ember application data in localforage.
 
 Compatible with Ember Data 1.0.beta.6.
-
-**NOTE**: New versions of the `localStorage` adapter are no longer compatible
-with older versions of Ember Data. For older versions, checkout the `pre-beta`
-branch.
 
 Usage
 -----
 
-Include `localstorage_adapter.js` in your app and then like all adapters:
+Include `localforage_adapter.js` in your app and then like all adapters:
 
 ```js
-App.ApplicationSerializer = DS.LSSerializer.extend();
-App.ApplicationAdapter = DS.LSAdapter.extend({
+App.ApplicationSerializer = DS.FSSerializer.extend();
+App.ApplicationAdapter = DS.FSAdapter.extend({
     namespace: 'yournamespace'
 });
 ```
 
-### Local Storage Namespace
+### Localforage Namespace
 
-All of your application data lives on a single `localStorage` key, it defaults to `DS.LSAdapter` but if you supply a `namespace` option it will store it there:
+All of your application data lives on a single `localforage` key, it defaults to `DS.LFAdapter` but if you supply a `namespace` option it will store it there:
 
 ```js
-DS.LSAdapter.create({
+DS.LFAdapter.create({
   namespace: 'my app'
 });
-```
-
-### Models
-
-Whenever the adapter returns a record, it'll also return all
-relationships, so __do not__ use `{async: true}` in you model definitions.
-
-#### Namespace
-
-If your model definition has a `url` property, the adapter will store the data on that namespace. URL is a weird term in this context, but it makes swapping out adapters simpler by not requiring additional properties on your models.
-
-```js
-var List = DS.Model.extend({
-  // ...
-});
-List.reopen({
-  url: '/some/url'
-});
-```
-
-### Quota Exceeded Handler
-
-Browser's `localStorage` has limited space, if you try to commit application data and the browser is out of space, then the adapter will trigger the `QUOTA_EXCEEDED_ERR` event.
-
-```js
-App.store.adapter.on('QUOTA_EXCEEDED_ERR', function(records){
-  // do stuff
-});
-
-App.store.commit();
 ```
 
 Todo
 ----
 
-- Make the repo nicer to work with long-term (do something more intelligent with dependencies found in `vendor`, etc.)
+- see if tests are working 
+- stop using a queue, put each record type in an own namespace
 
-Tests
------
+Tests (working on this)
+-----------------------
 
 If you don't have bower, install it with
 
@@ -82,8 +49,16 @@ run
 
     phantomjs test/runner.js test/index.html
 
-License & Copyright
--------------------
+    
+Localforage Adapter License & Copyright
+--------------------------------------------------
+
+Copyright (c) 2012 Genkgo BV
+MIT Style license. http://opensource.org/licenses/MIT
+
+
+Original LocalStorage Adapter License & Copyright
+--------------------------------------------------
 
 Copyright (c) 2012 Ryan Florence
 MIT Style license. http://opensource.org/licenses/MIT

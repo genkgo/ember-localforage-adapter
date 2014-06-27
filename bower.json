@@ -1,13 +1,17 @@
 {
-  "name": "ember-localstorage-adapter",
-  "version": "0.3.1",
+  "name": "ember-localforage-adapter",
+  "version": "0.1.1",
   "homepage": "https://github.com/rpflorence/ember-localstorage-adapter",
   "authors": [
-    "Ryan Florence <rpflorence@gmail.com>"
+    "Ryan Florence <rpflorence@gmail.com>",
+    "Frederik Bosch <f.bosch@genkgo.nl>"
   ],
-  "description": "Store your ember application data in localStorage.",
-  "main": "localstorage_adapter.js",
+  "description": "Store your ember application data in Mozilla's localforage. This project is orginally forked from ember-localstorage-adapter",
+  "main": "localforage_adapter.js",
   "keywords": [
+    "localforage",
+    "websql",
+    "indexeddb",
     "localstorage",
     "ember",
     "ember-data"
