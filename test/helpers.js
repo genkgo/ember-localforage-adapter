@@ -36,7 +36,7 @@ var FIXTURES = {
 };
 
 var logLS = function() {
-  console.log(localStorage.getItem('DS.LSAdapter'));
+  console.log(localStorage.getItem('DS.LFAdapter'));
 }
 
 var cl = function(msg) { console.log(msg); }
@@ -59,7 +59,7 @@ var setupStore = function(options) {
     adapter: adapter
   }));
 
-  container.register('serializer:-default', DS.LSSerializer);
+  container.register('serializer:-default', DS.LFSerializer);
   container.register('serializer:-rest', DS.RESTSerializer);
   container.register('adapter:-rest', DS.RESTAdapter);
 

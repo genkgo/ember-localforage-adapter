@@ -8,9 +8,9 @@ function stringify(string){
   return function(){ return string };
 }
 
-module('DS.LSAdapter', {
+module('DS.LFAdapter', {
   setup: function() {
-    localStorage.setItem('DS.LSAdapter', JSON.stringify(FIXTURES));
+    localforage.setItem('DS.LFAdapter', JSON.stringify(FIXTURES));
     var env = {};
 
     App.List = DS.Model.extend({
@@ -41,15 +41,15 @@ module('DS.LSAdapter', {
       item: App.Item,
       order: App.Order,
       hour: App.Hour,
-      adapter: DS.LSAdapter
+      adapter: DS.LFAdapter
     });
     store = env.store;
   }
 });
 
 test('existence', function() {
-  ok(DS.LSAdapter, 'LSAdapter added to DS namespace');
-  ok(DS.LSSerializer, 'LSSerializer added to DS namespace');
+  ok(DS.LFAdapter, 'LSAdapter added to DS namespace');
+  ok(DS.LFSerializer, 'LSSerializer added to DS namespace');
 });
 
 test('find with id', function() {

@@ -33,8 +33,8 @@ Todo
 - see if tests are working 
 - stop using a queue, put each record type in an own namespace
 
-Tests (working on this)
------------------------
+Tests (working on this, currently 45/47 passed)
+-----------------------------------------------
 
 If you don't have bower, install it with
 
