@@ -11,8 +11,8 @@ Usage
 Include `localforage_adapter.js` in your app and then like all adapters:
 
 ```js
-App.ApplicationSerializer = DS.FSSerializer.extend();
-App.ApplicationAdapter = DS.FSAdapter.extend({
+App.ApplicationSerializer = DS.LFSerializer.extend();
+App.ApplicationAdapter = DS.LFAdapter.extend({
     namespace: 'yournamespace'
 });
 ```
