@@ -1,7 +1,7 @@
 {
   "name": "ember-localforage-adapter",
   "version": "0.1.1",
-  "homepage": "https://github.com/rpflorence/ember-localstorage-adapter",
+  "homepage": "https://github.com/genkgo/ember-localforage-adapter",
   "authors": [
     "Ryan Florence <rpflorence@gmail.com>",
     "Frederik Bosch <f.bosch@genkgo.nl>"
