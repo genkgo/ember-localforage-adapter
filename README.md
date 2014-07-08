@@ -5,7 +5,7 @@ Store your ember application data in [Mozilla's localForage](https://github.com/
 
 "localForage is a JavaScript library that improves the offline experience of your web app by using asynchronous storage (via IndexedDB or WebSQL where available) with a simple, localStorage-like API."
 
-It is support by all major browsers, including mobile.
+It is supported by all major browsers, including mobile.
 
 Usage
 -----
