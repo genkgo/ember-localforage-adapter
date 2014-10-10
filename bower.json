@@ -25,6 +25,6 @@
   "dependencies": {
     "ember-data": "1.0.0-beta.8",
     "ember": ">= 1.0.0",
-    "localforage" : "0.8.*"
+    "localforage" : "~1.0"
   }
 }
