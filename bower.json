@@ -1,10 +1,11 @@
 {
   "name": "ember-localforage-adapter",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "homepage": "https://github.com/genkgo/ember-localforage-adapter",
   "authors": [
     "Ryan Florence <rpflorence@gmail.com>",
-    "Frederik Bosch <f.bosch@genkgo.nl>"
+    "Frederik Bosch <f.bosch@genkgo.nl>",
+    "Jildert Miedema <jildertmiedema@gmail.com>"
   ],
   "description": "Store your ember application data in Mozilla's localforage. This project is orginally forked from ember-localstorage-adapter",
   "main": "localforage_adapter.js",
@@ -23,8 +24,8 @@
     "vendor"
   ],
   "dependencies": {
-    "ember-data": "1.0.0-beta.8",
+    "ember-data": "1.0.0-beta.9",
     "ember": ">= 1.0.0",
-    "localforage" : "0.8.*"
+    "localforage" : "~1.0"
   }
 }
