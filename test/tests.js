@@ -10,7 +10,7 @@ function stringify(string){
 
 module('DS.LFAdapter', {
   setup: function() {
-    localforage.setItem('DS.LFAdapter', JSON.stringify(FIXTURES));
+    localforage.setItem('DS.LFAdapter', FIXTURES);
     var env = {};
 
     App.List = DS.Model.extend({

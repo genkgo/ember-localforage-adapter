@@ -304,7 +304,8 @@
       var adapter = this;
         return new Ember.RSVP.Promise(function(resolve, reject) {
           window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
-          resolve(storage ? JSON.parse(storage) : {});
+    	  var resolved = storage ? storage : {};
+          resolve(resolved);
           });
         });
     },
@@ -315,7 +316,8 @@
       return new Ember.RSVP.Promise(function(resolve, reject) {
         adapter.loadData().then(function (localStorageData) {
           localStorageData[modelNamespace] = data;
-            window.localforage.setItem(adapter.adapterNamespace(), JSON.stringify(localStorageData)).then (function () {
+            var toBePersisted = localStorageData;
+            window.localforage.setItem(adapter.adapterNamespace(), toBePersisted).then (function () {
               resolve();
             });
         });
@@ -329,7 +331,7 @@
       var adapter = this;
       return new Ember.RSVP.Promise(function(resolve, reject) {
         window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
-          var ns = storage ? JSON.parse(storage)[namespace] || {records: {}} : {records: {}};
+          var ns = storage ? storage[namespace] || {records: {}} : {records: {}};
           resolve(ns);
         });
       });
