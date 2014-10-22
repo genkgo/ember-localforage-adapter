@@ -1,7 +1,7 @@
 Ember Data Localforage Adapter
 ================================
 
-Store your ember application data in [Mozilla's localForage](https://github.com/mozilla/localForage). Compatible with Ember Data 1.0.beta.8.
+Store your ember application data in [Mozilla's localForage](https://github.com/mozilla/localForage). Compatible with Ember Data 1.0.beta.11.
 
 "localForage is a JavaScript library that improves the offline experience of your web app by using asynchronous storage (via IndexedDB or WebSQL where available) with a simple, localStorage-like API."
 
@@ -49,10 +49,10 @@ The adapter is available in the current versions of all major browsers: Chrome, 
 * **Safari 3.1** (includes Mobile Safari)
 
 
-Tests (45/47 should pass)
+Tests (46/47 should pass)
 -----------------------------------------------
 
-The tests are the same one as for the [localstorage adapter](https://github.com/rpflorence/ember-localstorage-adapter). Currently 45/47 of these tests are passing. If you don't have bower, install it with
+The tests are the same one as for the [localstorage adapter](https://github.com/rpflorence/ember-localstorage-adapter). Currently 46/47 of these tests are passing. If you don't have bower, install it with
 
     npm install bower -g
 
