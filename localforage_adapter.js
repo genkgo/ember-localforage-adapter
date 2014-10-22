@@ -284,8 +284,9 @@
 
           delete namespaceRecords.records[id];
 
-          adapter.persistData(type, namespaceRecords);
-          resolve();
+          adapter.persistData(type, namespaceRecords).then(function () {
+        	  resolve(); 
+          });
         });
       });
     },
