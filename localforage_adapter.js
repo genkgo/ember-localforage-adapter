@@ -144,17 +144,17 @@
               }
 
             var record = Ember.A(namespace.records[id]);
-
+            if (!record) {
+              reject();
+              return;
+            }
+            
             if (allowRecursive) {
               adapter.loadRelationships(type, record).then(function(finalRecord) {
                 resolve(finalRecord);
               });
             } else {
-              if (!record) {
-                reject();
-              } else {
-                resolve(record);
-              }
+              resolve(record);
             }
           });
       });
