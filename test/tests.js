@@ -43,6 +43,7 @@ module('DS.LFAdapter', {
       hour: App.Hour,
       adapter: DS.LFAdapter
     });
+    env.adapter.resetCache();
     store = env.store;
   }
 });

@@ -116,6 +116,11 @@
 
   DS.LFAdapter = DS.Adapter.extend(Ember.Evented, {
    queue : DS.LFQueue.create(),
+   cache : [],
+   
+   resetCache : function () {
+	   this.cache = [];
+   },
 
     /**
       This is the main entry point into finding records. The first parameter to
@@ -315,6 +320,7 @@
       var adapter = this;
       var modelNamespace = this.modelNamespace(type);
       return new Ember.RSVP.Promise(function(resolve, reject) {
+        adapter.cache[modelNamespace] = data;
         adapter.loadData().then(function (localStorageData) {
           localStorageData[modelNamespace] = data;
             var toBePersisted = localStorageData;
@@ -330,12 +336,18 @@
     _namespaceForType: function (type) {
       var namespace = this.modelNamespace(type);
       var adapter = this;
-      return new Ember.RSVP.Promise(function(resolve, reject) {
-        window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
-          var ns = storage ? storage[namespace] || {records: {}} : {records: {}};
-          resolve(ns);
-        });
-      });
+      if (adapter.cache[namespace]) {
+    	  var promise = new Ember.RSVP.resolve(adapter.cache[namespace]);
+      } else {
+	      var promise = new Ember.RSVP.Promise(function(resolve, reject) {
+	        window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
+	          var ns = storage ? storage[namespace] || {records: {}} : {records: {}};
+	          adapter.cache[namespace] = ns;
+	          resolve(ns);
+	        });
+	      });
+      }
+      return promise;
     },
 
     modelNamespace: function(type) {
