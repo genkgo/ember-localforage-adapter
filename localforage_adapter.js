@@ -343,7 +343,7 @@
       var adapter = this;
       var modelNamespace = this.modelNamespace(type);
       return new Ember.RSVP.Promise(function(resolve, reject) {
-    	  if (adapter.caching) {
+    	  if (adapter.caching !== 'none') {
     		  adapter.cache.set(modelNamespace, data);
     	  }
         adapter.loadData().then(function (localStorageData) {
@@ -363,7 +363,7 @@
       var adapter = this;
       var cache;
       
-      if (adapter.caching) {
+      if (adapter.caching !== 'none') {
     	  cache = adapter.cache.get(namespace);
       } else {
     	  cache = null;
