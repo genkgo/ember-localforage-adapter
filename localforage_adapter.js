@@ -143,7 +143,7 @@
   DS.LFAdapter = DS.Adapter.extend(Ember.Evented, {
    queue : DS.LFQueue.create(),
    cache : DS.LFCache.create(),
-   caching : 'all',
+   caching : 'model',
    
     /**
       This is the main entry point into finding records. The first parameter to
