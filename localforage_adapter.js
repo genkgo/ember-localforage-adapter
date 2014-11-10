@@ -377,7 +377,9 @@
 	          if (adapter.caching === 'model') {
 	        	  adapter.cache.set(namespace, ns);
 	          } else if (adapter.caching === 'all') {
-	        	  adapter.cache.replace(storage);
+	        	  if (storage) {
+	        		  adapter.cache.replace(storage);
+	        	  }
 	          }
 	          resolve(ns);
 	        });
