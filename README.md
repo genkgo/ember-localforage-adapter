@@ -29,6 +29,20 @@ DS.LFAdapter.create({
 });
 ```
 
+### Cache
+
+In order to reduce the number of getItem calls to localforage, you can specify a caching mechanism.
+
+```js
+DS.LFAdapter.create({
+  caching: 'model|all|none'
+});
+```
+
+While `all` will reduce the number of calls to getItem (for reading) to only one, you will fetch all your data in memory. The default
+behaviour therefore is `model`. This means: if you query one model, it will fetch all the items of that model from localforage.
+
+
 Support
 ----
 

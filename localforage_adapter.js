@@ -113,15 +113,38 @@
     }
 
   });
+  
+  DS.LFCache = Ember.Object.extend ({
+	  
+	  data : [],
+	  
+	  clear : function () {
+		  this.data = [];
+	  },
+	  
+	  get : function (namespace) {
+		  if (this.data[namespace]) {
+			  return this.data[namespace];
+		  } else {
+			  return null;
+		  }
+	  },
+	  
+	  set : function (namespace, objects) {
+		  this.data[namespace] = objects;
+	  },
+	  
+	  replace : function (data) {
+		  this.data = data;
+	  }
+	  
+  });
 
   DS.LFAdapter = DS.Adapter.extend(Ember.Evented, {
    queue : DS.LFQueue.create(),
-   cache : [],
+   cache : DS.LFCache.create(),
+   caching : 'all',
    
-   resetCache : function () {
-	   this.cache = [];
-   },
-
     /**
       This is the main entry point into finding records. The first parameter to
       this method is the model's name as a string.
@@ -320,7 +343,9 @@
       var adapter = this;
       var modelNamespace = this.modelNamespace(type);
       return new Ember.RSVP.Promise(function(resolve, reject) {
-        adapter.cache[modelNamespace] = data;
+    	  if (adapter.caching) {
+    		  adapter.cache.set(modelNamespace, data);
+    	  }
         adapter.loadData().then(function (localStorageData) {
           localStorageData[modelNamespace] = data;
             var toBePersisted = localStorageData;
@@ -336,13 +361,24 @@
     _namespaceForType: function (type) {
       var namespace = this.modelNamespace(type);
       var adapter = this;
-      if (adapter.cache[namespace]) {
-    	  var promise = new Ember.RSVP.resolve(adapter.cache[namespace]);
+      var cache;
+      
+      if (adapter.caching) {
+    	  cache = adapter.cache.get(namespace);
+      } else {
+    	  cache = null;
+      }
+      if (cache) {
+    	  var promise = new Ember.RSVP.resolve(cache);
       } else {
 	      var promise = new Ember.RSVP.Promise(function(resolve, reject) {
-	        window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
+    	  window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
 	          var ns = storage ? storage[namespace] || {records: {}} : {records: {}};
-	          adapter.cache[namespace] = ns;
+	          if (adapter.caching === 'model') {
+	        	  adapter.cache.set(namespace, ns);
+	          } else if (adapter.caching === 'all') {
+	        	  adapter.cache.replace(storage);
+	          }
 	          resolve(ns);
 	        });
 	      });
