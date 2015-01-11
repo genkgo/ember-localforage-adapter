@@ -1,5 +1,10 @@
 language: node_js
-before_script:
-  - npm install -g bower
-  - bower install
-script: "node_modules/.bin/ember test"
+sudo: false
+cache:
+  directories:
+    - node_modules
+install
+  - "npm install -g bower"
+  - "bower install"
+script:
+  - "node_modules/.bin/ember test"
