@@ -70,14 +70,15 @@ The tests are the same one as for the [localstorage adapter](https://github.com/
 
     npm install bower -g
 
-Then install the dependencies with
+Then install both npm and bower dependencies with
 
     bower install
+    npm install
 
 Open `tests/index.html` in a browser. If you have `phantomjs` installed,
 run
 
-    phantomjs test/runner.js test/index.html
+    ember test
 
     
 Localforage Adapter License & Copyright
