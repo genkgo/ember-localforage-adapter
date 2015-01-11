@@ -95,9 +95,6 @@ Localforage Adapter License & Copyright
 Copyright (c) 2012 Genkgo BV
 MIT Style license. http://opensource.org/licenses/MIT
 
-
 Original LocalStorage Adapter License & Copyright
---------------------------------------------------
-
 Copyright (c) 2012 Ryan Florence
 MIT Style license. http://opensource.org/licenses/MIT
