@@ -2,4 +2,4 @@ language: node_js
 before_script:
   - npm install -g bower
   - bower install
-script: "phantomjs test/runner.js test/index.html"
+script: "node_modules/.bin/ember test"
