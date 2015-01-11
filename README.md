@@ -7,6 +7,8 @@ Store your ember application data in [Mozilla's localForage](https://github.com/
 
 It is supported by all major browsers, including mobile.
 
+[![Build Status](https://travis-ci.org/genkgo/ember-localforage-adapter.png?branch=master)](https://travis-ci.org/genkgo/ember-localforage-adapter)
+
 Usage
 -----
 
