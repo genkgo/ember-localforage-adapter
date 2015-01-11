@@ -1,0 +1,504 @@
+import Ember from 'ember';
+import DS from 'ember-data';
+import LFQueue from 'ember-localforage-adapter/utils/queue';
+import LFCache from 'ember-localforage-adapter/utils/cache';
+
+export default DS.Adapter.extend(Ember.Evented, {
+  defaultSerializer: 'localforage',
+  queue : LFQueue.create(),
+  cache : LFCache.create(),
+  caching : 'model',
+
+  /**
+    This is the main entry point into finding records. The first parameter to
+    this method is the model's name as a string.
+
+    @method find
+    @param {DS.Model} type
+    @param {Object|String|Integer|null} id
+    */
+  find: function(store, type, id, opts) {
+    var adapter = this;
+
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+        var allowRecursive = true;
+       adapter._namespaceForType(type).then (function (namespace) {
+          /**
+             * In the case where there are relationships, this method is called again
+             * for each relation. Given the relations have references to the main
+             * object, we use allowRecursive to avoid going further into infinite
+             * recursiveness.
+             *
+             * Concept from ember-indexdb-adapter
+             */
+            if (opts && typeof opts.allowRecursive !== 'undefined') {
+              allowRecursive = opts.allowRecursive;
+            }
+
+          var record = Ember.A(namespace.records[id]);
+          if (!record) {
+            reject();
+            return;
+          }
+          
+          if (allowRecursive) {
+            adapter.loadRelationships(type, record).then(function(finalRecord) {
+              resolve(finalRecord);
+            });
+          } else {
+            resolve(record);
+          }
+        });
+    });
+  },
+
+  findMany: function (store, type, ids) {
+    var adapter = this;
+
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+    adapter._namespaceForType(type).then (function (namespace) {
+      var results = [];
+
+          for (var i = 0; i < ids.length; i++) {
+            results.push(Ember.copy(namespace.records[ids[i]]));
+          }
+
+          resolve(results);
+    });
+    }).then(function(records) {
+      if (records.get('length')) {
+        return adapter.loadRelationshipsForMany(type, records);
+      } else {
+        return records;
+      }
+    });
+  },
+
+  // Supports queries that look like this:
+  //
+  //   {
+  //     <property to query>: <value or regex (for strings) to match>,
+  //     ...
+  //   }
+  //
+  // Every property added to the query is an "AND" query, not "OR"
+  //
+  // Example:
+  //
+  //  match records with "complete: true" and the name "foo" or "bar"
+  //
+  //    { complete: true, name: /foo|bar/ }
+  findQuery: function (store, type, query, recordArray) {
+      var adapter = this;
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      adapter._namespaceForType(type).then (function (namespace) {
+        var results = adapter.query(namespace.records, query);
+
+          if (results.get('length')) {
+            results = adapter.loadRelationshipsForMany(type, results);
+          }
+
+          resolve(results);
+     });
+    });
+
+  },
+
+  query: function (records, query) {
+    var results = [],
+        id, record, property, test, push;
+    for (id in records) {
+      record = records[id];
+      for (property in query) {
+        test = query[property];
+        push = false;
+        if (Object.prototype.toString.call(test) === '[object RegExp]') {
+          push = test.test(record[property]);
+        } else {
+          push = record[property] === test;
+        }
+      }
+      if (push) {
+        results.push(record);
+      }
+    }
+    return results;
+  },
+
+  findAll: function (store, type) {
+    var adapter = this;
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      adapter._namespaceForType(type).then (function (namespace) {
+        var results = [];
+
+        for (var id in namespace.records) {
+          results.push(Ember.copy(namespace.records[id]));
+        }
+        resolve(results);
+      });
+    });
+  },
+
+  createRecord: function (store, type, record) {
+    var adapter = this;
+    return this.queue.attach(function(resolve, reject) {
+      adapter._namespaceForType(type).then (function (namespaceRecords) {
+        var recordHash = record.serialize({includeId: true});
+
+            namespaceRecords.records[recordHash.id] = recordHash;
+            adapter.persistData(type, namespaceRecords).then (function () {
+              resolve();
+            });
+      });
+    });
+  },
+
+  updateRecord: function (store, type, record) {
+    var adapter = this;
+    return this.queue.attach(function(resolve, reject) {
+      adapter._namespaceForType(type).then (function (namespaceRecords) {
+           var id = record.get('id');
+
+        namespaceRecords.records[id] = record.serialize({ includeId: true });
+
+        adapter.persistData(type, namespaceRecords).then (function () {
+          resolve();
+        });
+      });
+    });
+  },
+
+  deleteRecord: function (store, type, record) {
+    var adapter = this;
+    return this.queue.attach(function(resolve, reject) {
+      adapter._namespaceForType(type).then (function (namespaceRecords) {
+           var id = record.get('id');
+
+        delete namespaceRecords.records[id];
+
+        adapter.persistData(type, namespaceRecords).then(function () {
+          resolve(); 
+        });
+      });
+    });
+  },
+
+  generateIdForRecord: function () {
+    return Math.random().toString(32).slice(2).substr(0, 5);
+  },
+
+  // private
+
+  adapterNamespace: function () {
+    return this.get('namespace') || 'DS.LFAdapter';
+  },
+
+  loadData: function () {
+    var adapter = this;
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
+      var resolved = storage ? storage : {};
+        resolve(resolved);
+        });
+      });
+  },
+
+  persistData: function(type, data) {
+    var adapter = this;
+    var modelNamespace = this.modelNamespace(type);
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      if (adapter.caching !== 'none') {
+        adapter.cache.set(modelNamespace, data);
+      }
+      adapter.loadData().then(function (localStorageData) {
+        localStorageData[modelNamespace] = data;
+          var toBePersisted = localStorageData;
+          window.localforage.setItem(adapter.adapterNamespace(), toBePersisted).then (function () {
+            resolve();
+          });
+      });
+    });
+
+
+  },
+
+  _namespaceForType: function (type) {
+    var namespace = this.modelNamespace(type);
+    var adapter = this;
+    var cache;
+    var promise;
+    
+    if (adapter.caching !== 'none') {
+      cache = adapter.cache.get(namespace);
+    } else {
+      cache = null;
+    }
+    if (cache) {
+      promise = new Ember.RSVP.resolve(cache);
+    } else {
+      promise = new Ember.RSVP.Promise(function(resolve, reject) {
+      window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
+          var ns = storage ? storage[namespace] || {records: {}} : {records: {}};
+          if (adapter.caching === 'model') {
+            adapter.cache.set(namespace, ns);
+          } else if (adapter.caching === 'all') {
+            if (storage) {
+              adapter.cache.replace(storage);
+            }
+          }
+          resolve(ns);
+        });
+      });
+    }
+    return promise;
+  },
+
+  modelNamespace: function(type) {
+    return type.url || type.typeKey;
+  },
+
+
+  /**
+   * This takes a record, then analyzes the model relationships and replaces
+   * ids with the actual values.
+   *
+   * Stolen from ember-indexdb-adapter
+   *
+   * Consider the following JSON is entered:
+   *
+   * ```js
+   * {
+   *   "id": 1,
+   *   "title": "Rails Rambo",
+   *   "comments": [1, 2]
+   * }
+   *
+   * This will return:
+   *
+   * ```js
+   * {
+   *   "id": 1,
+   *   "title": "Rails Rambo",
+   *   "comments": [1, 2]
+   *
+   *   "_embedded": {
+   *     "comment": [{
+   *       "_id": 1,
+   *       "comment_title": "FIRST"
+   *     }, {
+   *       "_id": 2,
+   *       "comment_title": "Rails is unagi"
+   *     }]
+   *   }
+   * }
+   *
+   * This way, whenever a resource returned, its relationships will be also
+   * returned.
+   *
+   * @method loadRelationships
+   * @private
+   * @param {DS.Model} type
+   * @param {Object} record
+   */
+  loadRelationships: function(type, record) {
+    var adapter = this;
+
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      var resultJSON = {},
+          typeKey = type.typeKey,
+          relationshipNames, relationships,
+          relationshipPromises = [];
+
+      relationshipNames = Ember.get(type, 'relationshipNames');
+      relationships = relationshipNames.belongsTo;
+      relationships = relationships.concat(relationshipNames.hasMany);
+
+      relationships.forEach(function(relationName) {
+        var relationModel = type.typeForRelationship(relationName),
+            relationEmbeddedId = record[relationName],
+            relationProp  = adapter.relationshipProperties(type, relationName),
+            relationType  = relationProp.kind,
+            /**
+             * This is the relationship field.
+             */
+            promise, embedPromise;
+
+        var opts = {allowRecursive: false};
+
+        /**
+         * embeddedIds are ids of relations that are included in the main
+         * payload, such as:
+         *
+         * {
+         *    cart: {
+         *      id: "s85fb",
+         *      customer: "rld9u"
+         *    }
+         * }
+         *
+         * In this case, cart belongsTo customer and its id is present in the
+         * main payload. We find each of these records and add them to _embedded.
+         */
+        if (relationEmbeddedId) {
+          if (relationType === 'belongsTo' || relationType === 'hasOne') {
+            promise = adapter.find(null, relationModel, relationEmbeddedId, opts);
+          } else if (relationType === 'hasMany') {
+            promise = adapter.findMany(null, relationModel, relationEmbeddedId, opts);
+          }
+
+          embedPromise = new Ember.RSVP.Promise(function(resolve, reject) {
+            promise.then(function(relationRecord) {
+              var finalPayload = adapter.addEmbeddedPayload(record, relationName, relationRecord);
+              resolve(finalPayload);
+            });
+          });
+
+          relationshipPromises.push(embedPromise);
+        }
+      });
+
+      Ember.RSVP.all(relationshipPromises).then(function() {
+        resolve(record);
+      });
+    });
+  },
+
+
+  /**
+   * Given the following payload,
+   *
+   *   {
+   *      cart: {
+   *        id: "1",
+   *        customer: "2"
+   *      }
+   *   }
+   *
+   * With `relationshipName` being `customer` and `relationshipRecord`
+   *
+   *   {id: "2", name: "Rambo"}
+   *
+   * This method returns the following payload:
+   *
+   *   {
+   *      cart: {
+   *        id: "1",
+   *        customer: "2"
+   *      },
+   *      _embedded: {
+   *        customer: {
+   *          id: "2",
+   *          name: "Rambo"
+   *        }
+   *      }
+   *   }
+   *
+   * which is then treated by the serializer later.
+   *
+   * @method addEmbeddedPayload
+   * @private
+   * @param {Object} payload
+   * @param {String} relationshipName
+   * @param {Object} relationshipRecord
+   */
+  addEmbeddedPayload: function(payload, relationshipName, relationshipRecord) {
+    var objectHasId = (relationshipRecord && relationshipRecord.id),
+        arrayHasIds = (relationshipRecord.length && relationshipRecord.everyBy("id")),
+        isValidRelationship = (objectHasId || arrayHasIds);
+
+    if (isValidRelationship) {
+      if (!payload['_embedded']) {
+        payload['_embedded'] = {};
+      }
+
+      payload['_embedded'][relationshipName] = relationshipRecord;
+      if (relationshipRecord.length) {
+        payload[relationshipName] = relationshipRecord.mapBy('id');
+      } else {
+        payload[relationshipName] = relationshipRecord.id;
+      }
+    }
+
+    if (this.isArray(payload[relationshipName])) {
+      payload[relationshipName] = payload[relationshipName].filter(function(id) {
+        return id;
+      });
+    }
+
+    return payload;
+  },
+
+
+  isArray: function(value) {
+    return Object.prototype.toString.call(value) === '[object Array]';
+  },
+
+  /**
+   * Same as `loadRelationships`, but for an array of records.
+   *
+   * @method loadRelationshipsForMany
+   * @private
+   * @param {DS.Model} type
+   * @param {Object} recordsArray
+   */
+  loadRelationshipsForMany: function(type, recordsArray) {
+    var adapter = this;
+
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      var recordsWithRelationships = [],
+          recordsToBeLoaded = [],
+          promises = [];
+
+      /**
+       * Some times Ember puts some stuff in arrays. We want to clean it so
+       * we know exactly what to iterate over.
+       */
+      for (var i in recordsArray) {
+        if (recordsArray.hasOwnProperty(i)) {
+          recordsToBeLoaded.push(recordsArray[i]);
+        }
+      }
+
+      var loadNextRecord = function(record) {
+        /**
+         * Removes the first item from recordsToBeLoaded
+         */
+        recordsToBeLoaded = recordsToBeLoaded.slice(1);
+
+        var promise = adapter.loadRelationships(type, record);
+
+        promise.then(function(recordWithRelationships) {
+          recordsWithRelationships.push(recordWithRelationships);
+
+          if (recordsToBeLoaded[0]) {
+            loadNextRecord(recordsToBeLoaded[0]);
+          } else {
+            resolve(recordsWithRelationships);
+          }
+        });
+      };
+
+      /**
+       * We start by the first record
+       */
+      loadNextRecord(recordsToBeLoaded[0]);
+    });
+  },
+
+
+  /**
+   *
+   * @method relationshipProperties
+   * @private
+   * @param {DS.Model} type
+   * @param {String} relationName
+   */
+  relationshipProperties: function(type, relationName) {
+    var relationships = Ember.get(type, 'relationshipsByName');
+    if (relationName) {
+      return relationships.get(relationName);
+    } else {
+      return relationships;
+    }
+  }
+});
