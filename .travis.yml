@@ -3,7 +3,7 @@ sudo: false
 cache:
   directories:
     - node_modules
-install
+install:
   - "npm install -g bower"
   - "bower install"
 script:
