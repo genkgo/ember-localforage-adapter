@@ -70,31 +70,12 @@ The adapter is available in the current versions of all major browsers: Chrome, 
 * **Phonegap/Apache Cordova 1.2.0**
 * **Safari 3.1** (includes Mobile Safari)
 
-
-Tests (46/47 should pass)
------------------------------------------------
-
-The tests are the same one as for the [localstorage adapter](https://github.com/rpflorence/ember-localstorage-adapter). Currently 46/47 of these tests are passing. If you don't have bower, install it with
-
-    npm install bower -g
-
-Then install both npm and bower dependencies with
-
-    bower install
-    npm install
-
-Open `tests/index.html` in a browser. If you have `phantomjs` installed,
-run
-
-    ember test
-
-    
 Localforage Adapter License & Copyright
 --------------------------------------------------
 
 Copyright (c) 2012 Genkgo BV
 MIT Style license. http://opensource.org/licenses/MIT
 
-Original LocalStorage Adapter License & Copyright
+Original LocalStorage Adapter
 Copyright (c) 2012 Ryan Florence
 MIT Style license. http://opensource.org/licenses/MIT
