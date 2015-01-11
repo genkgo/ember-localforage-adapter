@@ -12,7 +12,13 @@ It is supported by all major browsers, including mobile.
 Usage
 -----
 
-Include `localforage_adapter.js` in your app and then like all adapters:
+Install the addon using ember cli
+
+```
+ember install:addon ember-localforage-adapter
+```
+
+Initialize the serializer and adapter.
 
 ```js
 App.ApplicationSerializer = DS.LFSerializer.extend();
