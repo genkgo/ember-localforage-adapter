@@ -4,6 +4,7 @@ cache:
   directories:
     - node_modules
 install:
+  - "npm install"
   - "npm install -g bower"
   - "bower install"
 script:
