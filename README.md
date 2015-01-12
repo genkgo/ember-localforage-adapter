@@ -20,13 +20,13 @@ Install the addon using ember cli
 ember install:addon ember-localforage-adapter
 ```
 
-Initialize the serializer and adapter.
+Initialize the adapter.
 
 ```js
-App.ApplicationSerializer = DS.LFSerializer.extend();
-App.ApplicationAdapter = DS.LFAdapter.extend({
-    namespace: 'yournamespace'
-});
+//app/adapters/application.js
+import LFAdapter from 'ember-localforage-adapter/adapters/localforage';
+
+export default LFAdapter;
 ```
 
 ### Localforage Namespace
@@ -34,8 +34,11 @@ App.ApplicationAdapter = DS.LFAdapter.extend({
 All of your application data lives on a single `localforage` key, it defaults to `DS.LFAdapter` but if you supply a `namespace` option it will store it there:
 
 ```js
-DS.LFAdapter.create({
-  namespace: 'my app'
+//app/adapters/user.js
+import LFAdapter from 'ember-localforage-adapter/adapters/localforage';
+
+export default LFAdapter.extend({
+  namespace: 'users'
 });
 ```
 
@@ -44,7 +47,9 @@ DS.LFAdapter.create({
 In order to reduce the number of getItem calls to localforage, you can specify a caching mechanism.
 
 ```js
-DS.LFAdapter.create({
+import LFAdapter from 'ember-localforage-adapter/adapters/localforage';
+
+export default LFAdapter.extend({
   caching: 'model|all|none'
 });
 ```
