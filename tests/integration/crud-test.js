@@ -264,64 +264,76 @@ test('deleteRecord', function() {
 test('changes in bulk', function() {
   stop();
   run( function() {
-    var promises,
-        listToUpdate = store.find('list', 'l1'),
-        listToDelete = store.find('list', 'l2'),
-        listToCreate = store.createRecord('list', { name: 'Rambo' });
 
-    var UpdateList = function(list) {
-      list.set('name', 'updated');
-      return list;
-    };
-    var DeleteList = function(list) {
-      list.deleteRecord();
-      return list;
-    };
-
-    promises = [
-      listToCreate,
-      listToUpdate.then(UpdateList),
-      listToDelete.then(DeleteList),
-    ];
-  
-    Ember.RSVP.all(promises).then(function(lists) {
-      promises = Ember.A();
-
-      lists.forEach(function(list) {
-        promises.push(list.save());
+    var listToUpdate = new Ember.RSVP.Promise(function(resolve, reject) {
+      store.find('list', 'l1').then(function(list) {
+        list.set('name', 'updated');
+        list.save().then(function(){
+          resolve();
+        });
       });
-
-      return promises;
-    }).then(function() {
-      var updatedList = store.find('list', 'l1'),
-          createdList = store.findQuery('list', {name: 'Rambo'}),
-          promises    = Ember.A();
-
-      createdList.then(function(lists) {
-        equal(get(lists, 'length'), 1, "Record was created successfully");
-        promises.push(new Ember.RSVP.Promise(function(){}));
-      });
-
+    });
+    
+    var listToCreate = new Ember.RSVP.Promise(function(resolve, reject) {
+      store.createRecord('list', { name: 'Rambo' }).save().then(function() {
+        resolve();
+      });      
+    });   
+      
+    var listToDelete = new Ember.RSVP.Promise(function(resolve, reject) {
       store.find('list', 'l2').then(function(list) {
-        equal(get(list, 'length'), undefined, "Record was deleted successfully");
-        promises.push(new Ember.RSVP.Promise(function(){}));
+        list.destroyRecord().then(function() {
+          resolve();
+        });
       });
+    });
 
-      updatedList.then(function(list) {
-        equal(get(list, 'name'), 'updated', "Record was updated successfully");
-        promises.push(new Ember.RSVP.Promise(function(){}));
-      });
+    var promises = [
+      listToUpdate,
+      listToCreate,
+      listToDelete
+    ];
+      
+    Ember.RSVP.all(promises).then(function() {
 
+      promises    = Ember.A();
+
+      promises.push(
+        new Ember.RSVP.Promise(function(resolve, reject) {
+          store.find('list', 'l1').then(function(list) {
+            equal(get(list, 'name'), 'updated', "Record was updated successfully");
+            resolve();
+          });
+        })
+      );
+
+      promises.push(
+        new Ember.RSVP.Promise(function(resolve, reject) {
+          store.findQuery('list', {name: 'Rambo'}).then(function(lists) {
+            equal(get(lists, 'length'), 1, "Record was created successfully");
+            resolve();
+          });
+        })
+      );
+
+      promises.push(
+        new Ember.RSVP.Promise(function(resolve, reject) {
+          store.find('list', 'l2').then(
+            function(list) {
+            },
+            function(list) {
+              equal(get(list, 'length'), undefined, "Record was deleted successfully");
+              resolve();
+            }
+          );
+        })
+      );
     
       Ember.RSVP.all(promises).then(function() {
         start();
       });
     });
   });
-  // assertState('deleted', true, listToDelete);
-  // assertListNotFoundInStorage(listToDelete);
-  // assertStoredList(updatedList);
-  // assertStoredList(newList);
 });
 
 

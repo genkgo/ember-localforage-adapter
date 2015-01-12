@@ -25,7 +25,6 @@
   ],
   "dependencies": {
     "jquery": "^1.11.1",
-    "ember-data": "1.0.0-beta.14.1",
     "ember": "~1.9.1",
     "ember-resolver": "~0.1.11",
     "loader.js": "stefanpenner/loader.js#1.0.1",
