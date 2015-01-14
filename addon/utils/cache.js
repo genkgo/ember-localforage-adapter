@@ -17,7 +17,7 @@ export default Ember.Object.extend ({
   },
   
   set : function (namespace, objects) {
-    this.data[namespace] = objects;
+    this.data[namespace] = Ember.copy(objects, true);
   },
   
   replace : function (data) {
