@@ -124,7 +124,7 @@
 	  
 	  get : function (namespace) {
 		  if (this.data[namespace]) {
-			  return this.data[namespace];
+			  return Ember.copy(this.data[namespace], true);
 		  } else {
 			  return null;
 		  }
