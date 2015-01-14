@@ -1,6 +1,6 @@
 {
   "name": "ember-localforage-adapter",
-  "version": "0.6.0",
+  "version": "0.6.4",
   "homepage": "https://github.com/genkgo/ember-localforage-adapter",
   "authors": [
     "Ryan Florence <rpflorence@gmail.com>",
@@ -34,6 +34,6 @@
     "ember-qunit": "0.1.8",
     "ember-qunit-notifications": "0.0.4",
     "qunit": "~1.15.0",
-    "localforage" : "~1.2.1"
+    "localforage": "~1.2.1"
   }
 }
