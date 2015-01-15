@@ -135,7 +135,7 @@
 	  },
 	  
 	  replace : function (data) {
-		  this.data = data;
+		  this.data = Ember.copy(Ember.A(data), true);
 	  }
 	  
   });
