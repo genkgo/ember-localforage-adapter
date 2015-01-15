@@ -2,26 +2,29 @@ import Ember from 'ember';
 
 export default Ember.Object.extend ({
   
-  data : [],
+  data : Ember.Map.create(),
   
   clear : function () {
-    this.data = [];
+    this.data.clear();
   },
   
   get : function (namespace) {
-    if (this.data[namespace]) {
-      return Ember.copy(Ember.A(this.data[namespace]), true);
+    if (this.data.get(namespace)) {
+      return Ember.copy(Ember.A(this.data.get(namespace)), true);
     } else {
       return null;
     }
   },
   
   set : function (namespace, objects) {
-    this.data[namespace] = Ember.copy(Ember.A(objects), true);
+    this.data.set(namespace, Ember.copy(Ember.A(objects), true));
   },
   
   replace : function (data) {
-    this.data = data;
+    this.clear();
+    for (var index in data) {
+      this.set(index, data[index]);
+    }
   }
   
 });

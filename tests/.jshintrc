@@ -12,6 +12,7 @@
     "equal",
     "notEqual",
     "notStrictEqual",
+    "notDeepEqual",
     "test",
     "asyncTest",
     "testBoth",
