@@ -24,8 +24,8 @@
     "vendor"
   ],
   "dependencies": {
-    "ember-data": "1.0.0-beta.11",
+    "ember-data": "1.0.0-beta.14.1",
     "ember": "~1.8",
-    "localforage" : "~1.0"
+    "localforage" : "~1.2"
   }
 }
