@@ -124,14 +124,14 @@
 	  
 	  get : function (namespace) {
 		  if (this.data[namespace]) {
-			  return Ember.copy(this.data[namespace], true);
+			  return Ember.copy(Ember.A(this.data[namespace]), true);
 		  } else {
 			  return null;
 		  }
 	  },
 	  
 	  set : function (namespace, objects) {
-		  this.data[namespace] = Ember.copy(objects, true);
+		  this.data[namespace] = Ember.copy(Ember.A(objects), true);
 	  },
 	  
 	  replace : function (data) {
