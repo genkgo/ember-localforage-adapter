@@ -13,9 +13,9 @@ var set = Ember.set;
 var FIXTURES = {
   'list': {
     records: {
-      'l1': { id: 'l1', name: 'one', b: true, items: ['i1', 'i2'] },
-      'l2': { id: 'l2', name: 'two', b: false, items: [] },
-      'l3': { id: 'l3', name: 'three', b: false, items: [] }
+      'l1': { id: 'l1', name: 'one', b: true, items: ['i1', 'i2'], day: 24 },
+      'l2': { id: 'l2', name: 'two', b: false, items: [], day: 48 },
+      'l3': { id: 'l3', name: 'three', b: false, items: [], day: 72 }
     }
   },
 
@@ -59,14 +59,14 @@ module('CRUD', {
     });
   },
 
-  teardown: function() {  
+  teardown: function() {
     run(App, 'destroy');
   }
 });
 
 
 test('find with id', function() {
-  expect(3);
+  expect(4);
 
   stop();
   run(function() {
@@ -74,6 +74,7 @@ test('find with id', function() {
       equal(get(list, 'id'),   'l1',  'id is loaded correctly');
       equal(get(list, 'name'), 'one', 'name is loaded correctly');
       equal(get(list, 'b'),    true,  'b is loaded correctly');
+      equal(get(list, 'day'),    1,  'day is loaded correctly');
       start();
     });
   });
@@ -139,6 +140,10 @@ test('findAll', function() {
       equal(get(firstRecord,  'name'), "one", "First item's name is one");
       equal(get(secondRecord, 'name'), "two", "Second item's name is two");
       equal(get(thirdRecord,  'name'), "three", "Third item's name is three");
+
+      equal(get(firstRecord,  'day'), 1, "First item's day is 1");
+      equal(get(secondRecord, 'day'), 2, "Second item's day is 2");
+      equal(get(thirdRecord,  'day'), 3, "Third item's day is 3");
 
       start();
     });
@@ -273,13 +278,13 @@ test('changes in bulk', function() {
         });
       });
     });
-    
+
     var listToCreate = new Ember.RSVP.Promise(function(resolve, reject) {
       store.createRecord('list', { name: 'Rambo' }).save().then(function() {
         resolve();
-      });      
-    });   
-      
+      });
+    });
+
     var listToDelete = new Ember.RSVP.Promise(function(resolve, reject) {
       store.find('list', 'l2').then(function(list) {
         list.destroyRecord().then(function() {
@@ -293,7 +298,7 @@ test('changes in bulk', function() {
       listToCreate,
       listToDelete
     ];
-      
+
     Ember.RSVP.all(promises).then(function() {
 
       promises    = Ember.A();
@@ -328,7 +333,7 @@ test('changes in bulk', function() {
           );
         })
       );
-    
+
       Ember.RSVP.all(promises).then(function() {
         start();
       });
