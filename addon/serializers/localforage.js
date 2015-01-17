@@ -85,8 +85,7 @@ export default DS.JSONSerializer.extend({
     var serializer = this;
 
     return payload.map(function(record) {
-      var extracted = serializer.extractSingle(store, type, record);
-      return serializer.normalize(type, record);
+      return serializer.extractSingle(store, type, record);
     });
   }
 
