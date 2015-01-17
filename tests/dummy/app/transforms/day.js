@@ -5,7 +5,6 @@ export default DS.Transform.extend({
     return day * 24;
   },
   deserialize: function(hour) {
-    console.log(hour);
     return hour / 24;
   }
 });

@@ -126,7 +126,7 @@ test('findQuery', function() {
 
 
 test('findAll', function() {
-  expect(4);
+  expect(7);
 
   stop();
   run(function() {
