@@ -1,6 +1,6 @@
 {
   "name": "ember-localforage-adapter",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "homepage": "https://github.com/genkgo/ember-localforage-adapter",
   "authors": [
     "Ryan Florence <rpflorence@gmail.com>",
