@@ -40,7 +40,7 @@ export default DS.Adapter.extend(Ember.Evented, {
             reject();
             return;
           }
-          
+
           if (allowRecursive) {
             adapter.loadRelationships(type, record).then(function(finalRecord) {
               resolve(finalRecord);
@@ -139,11 +139,11 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  createRecord: function (store, type, record) {
+  createRecord: function (store, type, snapshot) {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-        var recordHash = record.serialize({includeId: true});
+        var recordHash = snapshot.record.serialize({includeId: true});
 
             namespaceRecords.records[recordHash.id] = recordHash;
             adapter.persistData(type, namespaceRecords).then (function () {
@@ -153,13 +153,13 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  updateRecord: function (store, type, record) {
+  updateRecord: function (store, type, snapshot) {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = record.get('id');
+           var id = snapshot.get('id');
 
-        namespaceRecords.records[id] = record.serialize({ includeId: true });
+        namespaceRecords.records[id] = snapshot.record.serialize({ includeId: true });
 
         adapter.persistData(type, namespaceRecords).then (function () {
           resolve();
@@ -177,7 +177,7 @@ export default DS.Adapter.extend(Ember.Evented, {
         delete namespaceRecords.records[id];
 
         adapter.persistData(type, namespaceRecords).then(function () {
-          resolve(); 
+          resolve();
         });
       });
     });
@@ -227,7 +227,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
     var cache;
     var promise;
-    
+
     if (adapter.caching !== 'none') {
       cache = adapter.cache.get(namespace);
     } else {
