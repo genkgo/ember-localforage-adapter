@@ -407,11 +407,11 @@ export default DS.Adapter.extend(Ember.Evented, {
         isValidRelationship = (objectHasId || arrayHasIds);
 
     if (isValidRelationship) {
-      if (!payload['_embedded']) {
-        payload['_embedded'] = {};
+      if (!payload._embedded) {
+        payload._embedded = {};
       }
 
-      payload['_embedded'][relationshipName] = relationshipRecord;
+      payload._embedded[relationshipName] = relationshipRecord;
       if (relationshipRecord.length) {
         payload[relationshipName] = relationshipRecord.mapBy('id');
       } else {
