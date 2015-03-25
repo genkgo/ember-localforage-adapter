@@ -17,7 +17,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     @param {DS.Model} type
     @param {Object|String|Integer|null} id
     */
-  find: function(store, type, id, opts) {
+  find: function(store, type, id, snapshot) {
     var adapter = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
@@ -31,8 +31,8 @@ export default DS.Adapter.extend(Ember.Evented, {
              *
              * Concept from ember-indexdb-adapter
              */
-            if (opts && typeof opts.allowRecursive !== 'undefined') {
-              allowRecursive = opts.allowRecursive;
+            if (snapshot && typeof snapshot.allowRecursive !== 'undefined') {
+              allowRecursive = snapshot.allowRecursive;
             }
 
           var record = Ember.A(namespace.records[id]);
@@ -168,11 +168,11 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  deleteRecord: function (store, type, record) {
+  deleteRecord: function (store, type, snapshot) {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = record.get('id');
+           var id = snapshot.get('id');
 
         delete namespaceRecords.records[id];
 
