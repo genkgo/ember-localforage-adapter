@@ -17,7 +17,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     @param {DS.Model} type
     @param {Object|String|Integer|null} id
     */
-  find: function(store, type, id, opts) {
+  find: function(store, type, id, snapshot) {
     var adapter = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
@@ -31,8 +31,8 @@ export default DS.Adapter.extend(Ember.Evented, {
              *
              * Concept from ember-indexdb-adapter
              */
-            if (opts && typeof opts.allowRecursive !== 'undefined') {
-              allowRecursive = opts.allowRecursive;
+            if (snapshot && typeof snapshot.allowRecursive !== 'undefined') {
+              allowRecursive = snapshot.allowRecursive;
             }
 
           var record = Ember.A(namespace.records[id]);
@@ -40,7 +40,7 @@ export default DS.Adapter.extend(Ember.Evented, {
             reject();
             return;
           }
-          
+
           if (allowRecursive) {
             adapter.loadRelationships(type, record).then(function(finalRecord) {
               resolve(finalRecord);
@@ -139,11 +139,11 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  createRecord: function (store, type, record) {
+  createRecord: function (store, type, snapshot) {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-        var recordHash = record.serialize({includeId: true});
+        var recordHash = snapshot.record.serialize({includeId: true});
 
             namespaceRecords.records[recordHash.id] = recordHash;
             adapter.persistData(type, namespaceRecords).then (function () {
@@ -153,13 +153,13 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  updateRecord: function (store, type, record) {
+  updateRecord: function (store, type, snapshot) {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = record.get('id');
+           var id = snapshot.id;
 
-        namespaceRecords.records[id] = record.serialize({ includeId: true });
+        namespaceRecords.records[id] = snapshot.record.serialize({ includeId: true });
 
         adapter.persistData(type, namespaceRecords).then (function () {
           resolve();
@@ -168,16 +168,16 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  deleteRecord: function (store, type, record) {
+  deleteRecord: function (store, type, snapshot) {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = record.get('id');
+           var id = snapshot.id;
 
         delete namespaceRecords.records[id];
 
         adapter.persistData(type, namespaceRecords).then(function () {
-          resolve(); 
+          resolve();
         });
       });
     });
@@ -227,7 +227,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
     var cache;
     var promise;
-    
+
     if (adapter.caching !== 'none') {
       cache = adapter.cache.get(namespace);
     } else {
@@ -407,11 +407,11 @@ export default DS.Adapter.extend(Ember.Evented, {
         isValidRelationship = (objectHasId || arrayHasIds);
 
     if (isValidRelationship) {
-      if (!payload['_embedded']) {
-        payload['_embedded'] = {};
+      if (!payload._embedded) {
+        payload._embedded = {};
       }
 
-      payload['_embedded'][relationshipName] = relationshipRecord;
+      payload._embedded[relationshipName] = relationshipRecord;
       if (relationshipRecord.length) {
         payload[relationshipName] = relationshipRecord.mapBy('id');
       } else {

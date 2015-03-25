@@ -3,14 +3,14 @@ import DS from 'ember-data';
 
 export default DS.JSONSerializer.extend({
 
-  serializeHasMany: function(record, json, relationship) {
+  serializeHasMany: function(snapshot, json, relationship) {
     var key = relationship.key,
-        relationshipType = record.constructor.determineRelationshipType(relationship);
+        relationshipType = snapshot.type.determineRelationshipType(relationship);
 
     if (relationshipType === 'manyToNone' ||
         relationshipType === 'manyToMany' ||
         relationshipType === 'manyToOne') {
-      json[key] = record.get(key).mapBy('id');
+      json[key] = snapshot.hasMany(key).mapBy('id');
     // TODO support for polymorphic manyToNone and manyToMany relationships
     }
   },
