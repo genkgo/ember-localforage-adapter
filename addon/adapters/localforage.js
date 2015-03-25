@@ -157,7 +157,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = snapshot.get('id');
+           var id = snapshot.id;
 
         namespaceRecords.records[id] = snapshot.record.serialize({ includeId: true });
 
@@ -172,7 +172,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = snapshot.get('id');
+           var id = snapshot.id;
 
         delete namespaceRecords.records[id];
 
