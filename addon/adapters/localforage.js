@@ -143,12 +143,13 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-        var recordHash = snapshot.record.serialize({includeId: true});
+        var serializer = store.serializerFor(type.typeKey);
+        var recordHash = serializer.serialize(snapshot, {includeId: true});
 
-            namespaceRecords.records[recordHash.id] = recordHash;
-            adapter.persistData(type, namespaceRecords).then (function () {
-              resolve();
-            });
+        namespaceRecords.records[recordHash.id] = recordHash;
+        adapter.persistData(type, namespaceRecords).then (function () {
+          resolve();
+        });
       });
     });
   },
@@ -157,10 +158,11 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
     return this.queue.attach(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = snapshot.id;
+        var id = snapshot.id;
+        var serializer = store.serializerFor(type.typeKey);
+        var recordHash = serializer.serialize(snapshot, {includeId: true});
 
-        namespaceRecords.records[id] = snapshot.record.serialize({ includeId: true });
-
+        namespaceRecords.records[id] = recordHash;
         adapter.persistData(type, namespaceRecords).then (function () {
           resolve();
         });
