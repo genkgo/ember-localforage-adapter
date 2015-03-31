@@ -139,34 +139,9 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  createRecord: function (store, type, snapshot) {
-    var adapter = this;
-    return this.queue.attach(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespaceRecords) {
-        var recordHash = snapshot.record.serialize({includeId: true});
+  createRecord: updateOrCreate,
 
-            namespaceRecords.records[recordHash.id] = recordHash;
-            adapter.persistData(type, namespaceRecords).then (function () {
-              resolve();
-            });
-      });
-    });
-  },
-
-  updateRecord: function (store, type, snapshot) {
-    var adapter = this;
-    return this.queue.attach(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = snapshot.id;
-
-        namespaceRecords.records[id] = snapshot.record.serialize({ includeId: true });
-
-        adapter.persistData(type, namespaceRecords).then (function () {
-          resolve();
-        });
-      });
-    });
-  },
+  updateRecord: updateOrCreate,
 
   deleteRecord: function (store, type, snapshot) {
     var adapter = this;
@@ -502,3 +477,20 @@ export default DS.Adapter.extend(Ember.Evented, {
     }
   }
 });
+
+function updateOrCreate(store, type, snapshot) {
+  var adapter = this;
+  return this.queue.attach(function(resolve, reject) {
+    adapter._namespaceForType(type).then (function (namespaceRecords) {
+      var serializer = store.serializerFor(type.typeKey);
+      var recordHash = serializer.serialize(snapshot, {includeId: true});
+      // update(id comes from snapshot) or create(id comes from serialization)
+      var id = snapshot.id || recordHash.id;
+
+      namespaceRecords.records[id] = recordHash;
+      adapter.persistData(type, namespaceRecords).then (function () {
+        resolve();
+      });
+    });
+  });
+}
