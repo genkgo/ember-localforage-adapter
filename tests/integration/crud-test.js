@@ -42,6 +42,18 @@ var FIXTURES = {
       'h3': { id: 'h3', name: 'three', amount: 2, order: 'o3' },
       'h4': { id: 'h4', name: 'four', amount: 1, order: 'o3' }
     }
+  },
+
+  'customer': {
+    records: {
+      '1': {
+        id: '1',
+        addresses: [
+          { id: '1', addressNumber: '12345' },
+          { id: '2', addressNumber: '54321' }
+        ]
+      }
+    }
   }
 };
 
@@ -429,5 +441,31 @@ test('saves hasMany', function() {
   });
 });
 
+test('loads embedded hasMany', function() {
+  expect(1);
+
+  stop();
+
+  run(function() {
+    store.find('customer', '1').then(function(order) {
+      var addresses = order.get('addresses');
+
+      equal(addresses.count, 2);
+      var address1 = addresses.get('firstObject'),
+          address2 = addresses.get('lastObject');
+
+      equal(get(address1, 'id'), '1',
+        'first address id is loaded correctly');
+      equal(get(address1, 'addressNumber'), '12345',
+        'first address number is loaded correctly');
+      equal(get(address2, 'id'), '2',
+        'first address id is loaded correctly');
+      equal(get(address2, 'addressNumber'), '54321',
+        'first address number is loaded correctly');
+
+      start();
+    });
+  });
+});
 
 
