@@ -8,7 +8,7 @@ moduleFor('serializer:customer', {
   // needs: ['serializer:foo']
 });
 
-test('it exists', function(assert) {
+test('it is set up with embedded:always style for the addresses relation', function(assert) {
   var serializer = this.subject();
-  assert.ok(serializer);
+  assert.ok(serializer.hasEmbeddedAlwaysOption('addresses'), 'addresses relation is not set up with embedded:always style');
 });
