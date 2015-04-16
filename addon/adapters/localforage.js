@@ -316,7 +316,7 @@ export default DS.Adapter.extend(Ember.Evented, {
          * main payload. We find each of these records and add them to _embedded.
          */
         var serializer = store.serializerFor(type.typeKey);
-        var embeddedAlways = typeof(serializer.hasEmbeddedAlwaysOption) == 'function' && serializer.hasEmbeddedAlwaysOption(relationProp.key);
+        var embeddedAlways = typeof(serializer.hasEmbeddedAlwaysOption) === 'function' && serializer.hasEmbeddedAlwaysOption(relationProp.key);
 
         // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
         if (relationEmbeddedId && !embeddedAlways) {
