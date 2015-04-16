@@ -441,14 +441,14 @@ test('saves hasMany', function() {
   });
 });
 
-test('loads embedded hasMany', function() {
+test("loads embedded hasMany in a 'find with id' operation", function() {
   expect(5);
 
   stop();
 
   run(function() {
-    store.find('customer', '1').then(function(order) {
-      var addresses = order.get('addresses');
+    store.find('customer', '1').then(function(customer) {
+      var addresses = customer.get('addresses');
 
       equal(addresses.length, 2);
       var address1 = addresses.get('firstObject'),
@@ -467,5 +467,3 @@ test('loads embedded hasMany', function() {
     });
   });
 });
-
-
