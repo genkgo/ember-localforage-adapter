@@ -469,7 +469,6 @@ test("loads embedded hasMany in a 'find with id' operation", function() {
   });
 });
 
-
 test("loads embedded hasMany in a 'find all' operation", function() {
   expect(6);
 
@@ -523,6 +522,25 @@ test("loads embedded hasMany in a 'find many' operation", function() {
       equal(get(address2, 'id'), '2',
         'first address id is loaded correctly');
       equal(get(address2, 'addressNumber'), '54321',
+        'first address number is loaded correctly');
+
+      start();
+    });
+  });
+});
+
+test("loads embedded belongsTo in a 'find with id' operation", function() {
+  expect(5);
+
+  stop();
+
+  run(function() {
+    store.find('customer', '1').then(function(customer) {
+      var parentCustomer = customer.get('parentCustomer');
+
+     equal(get(parentCustomer, 'id'), '2',
+        'parentCustomer id is loaded correctly');
+      equal(get(parentCustomer, 'customerNumber'), '321',
         'first address number is loaded correctly');
 
       start();
