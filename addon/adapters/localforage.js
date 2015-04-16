@@ -315,8 +315,7 @@ export default DS.Adapter.extend(Ember.Evented, {
          * In this case, cart belongsTo customer and its id is present in the
          * main payload. We find each of these records and add them to _embedded.
          */
-        var serializer = store.serializerFor(type.typeKey);
-        var embeddedAlways = typeof(serializer.hasEmbeddedAlwaysOption) === 'function' && serializer.hasEmbeddedAlwaysOption(relationProp.key);
+        var embeddedAlways = adapter.isEmbeddedAlways(store, type.typeKey, relationProp.key);
 
         // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
         if (relationEmbeddedId && !embeddedAlways) {
@@ -481,6 +480,17 @@ export default DS.Adapter.extend(Ember.Evented, {
     } else {
       return relationships;
     }
+  },
+
+  isEmbeddedAlways: function(store, typeKey, relationKey) {
+    if (store === undefined || store === null) {
+      return false;
+    }
+
+    var serializer = store.serializerFor(typeKey);
+    var embeddedAlways = typeof(serializer.hasEmbeddedAlwaysOption) === 'function' &&
+      serializer.hasEmbeddedAlwaysOption(relationKey);
+    return embeddedAlways;
   }
 });
 
