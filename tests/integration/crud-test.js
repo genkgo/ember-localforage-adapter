@@ -48,6 +48,7 @@ var FIXTURES = {
     records: {
       '1': {
         id: '1',
+        customerNumber: '123',
         addresses: [
           { id: '1', addressNumber: '12345' },
           { id: '2', addressNumber: '54321' }
@@ -476,6 +477,36 @@ test("loads embedded hasMany in a 'find all' operation", function() {
 
   run(function() {
     store.find('customer').then(function(customers) {
+      equal(get(customers, 'length'), 1);
+
+      var customer = customers.objectAt(0);
+      var addresses = customer.get('addresses');
+
+      equal(addresses.length, 2);
+      var address1 = addresses.get('firstObject'),
+          address2 = addresses.get('lastObject');
+
+      equal(get(address1, 'id'), '1',
+        'first address id is loaded correctly');
+      equal(get(address1, 'addressNumber'), '12345',
+        'first address number is loaded correctly');
+      equal(get(address2, 'id'), '2',
+        'first address id is loaded correctly');
+      equal(get(address2, 'addressNumber'), '54321',
+        'first address number is loaded correctly');
+
+      start();
+    });
+  });
+});
+
+test("loads embedded hasMany in a 'find many' operation", function() {
+  expect(6);
+
+  stop();
+
+  run(function() {
+    store.find('customer', { customerNumber: '123' }).then(function(customers) {
       equal(get(customers, 'length'), 1);
 
       var customer = customers.objectAt(0);
