@@ -4,7 +4,8 @@ import LFSerializer from 'ember-localforage-adapter/serializers/localforage';
 export default LFSerializer.extend(
   DS.EmbeddedRecordsMixin, {
     attrs: {
-      addresses: { embedded: 'always' }
+      addresses: { embedded: 'always' },
+      hour: { embedded: 'always' }
     }
   }
 );

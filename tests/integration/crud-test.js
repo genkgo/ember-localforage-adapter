@@ -52,7 +52,11 @@ var FIXTURES = {
         addresses: [
           { id: '1', addressNumber: '12345' },
           { id: '2', addressNumber: '54321' }
-        ]
+        ],
+        hour: {
+          id: 'h5',
+          name: 'five'
+        }
       }
     }
   }
@@ -476,7 +480,7 @@ test("loads embedded hasMany in a 'find all' operation", function() {
 
   run(function() {
     store.find('customer').then(function(customers) {
-      equal(get(customers, 'length'), 1);
+      equal(get(customers, 'length'), 1, 'one customer was retrieved');
 
       var customer = customers.objectAt(0);
       var addresses = customer.get('addresses');
@@ -530,18 +534,18 @@ test("loads embedded hasMany in a 'find many' operation", function() {
 });
 
 test("loads embedded belongsTo in a 'find with id' operation", function() {
-  expect(5);
+  expect(2);
 
   stop();
 
   run(function() {
     store.find('customer', '1').then(function(customer) {
-      var parentCustomer = customer.get('parentCustomer');
+      var hour = customer.get('hour');
 
-     equal(get(parentCustomer, 'id'), '2',
-        'parentCustomer id is loaded correctly');
-      equal(get(parentCustomer, 'customerNumber'), '321',
-        'first address number is loaded correctly');
+     equal(get(hour, 'id'), 'h5',
+        'hour id is loaded correctly');
+      equal(get(hour, 'name'), 'five',
+        'hour name is loaded correctly');
 
       start();
     });

@@ -2,6 +2,6 @@ import DS from 'ember-data';
 
 export default DS.Model.extend({
   customerNumber: DS.Model(),
-  parentCustomer: DS.belongsTo('customer'),
+  hour: DS.belongsTo('hour'),
   addresses: DS.hasMany('address')
 });
