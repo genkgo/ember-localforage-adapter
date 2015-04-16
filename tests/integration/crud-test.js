@@ -442,7 +442,7 @@ test('saves hasMany', function() {
 });
 
 test('loads embedded hasMany', function() {
-  expect(1);
+  expect(5);
 
   stop();
 
@@ -450,7 +450,7 @@ test('loads embedded hasMany', function() {
     store.find('customer', '1').then(function(order) {
       var addresses = order.get('addresses');
 
-      equal(addresses.count, 2);
+      equal(addresses.length, 2);
       var address1 = addresses.get('firstObject'),
           address2 = addresses.get('lastObject');
 
