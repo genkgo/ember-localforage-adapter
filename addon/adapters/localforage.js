@@ -95,7 +95,7 @@ export default DS.Adapter.extend(Ember.Evented, {
         var results = adapter.query(namespace.records, query);
 
           if (results.get('length')) {
-            results = adapter.loadRelationshipsForMany(type, results);
+            results = adapter.loadRelationshipsForMany(store, type, results);
           }
 
           resolve(results);
