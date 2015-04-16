@@ -320,9 +320,9 @@ export default DS.Adapter.extend(Ember.Evented, {
         // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
         if (relationEmbeddedId && !embeddedAlways) {
           if (relationType === 'belongsTo' || relationType === 'hasOne') {
-            promise = adapter.find(null, relationModel, relationEmbeddedId, opts);
+            promise = adapter.find(store, relationModel, relationEmbeddedId, opts);
           } else if (relationType === 'hasMany') {
-            promise = adapter.findMany(null, relationModel, relationEmbeddedId, opts);
+            promise = adapter.findMany(store, relationModel, relationEmbeddedId, opts);
           }
 
           embedPromise = new Ember.RSVP.Promise(function(resolve, reject) {
