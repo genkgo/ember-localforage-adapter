@@ -17,7 +17,7 @@ Usage
 Install the addon using ember cli
 
 ```
-ember install:addon ember-localforage-adapter
+ember install ember-localforage-adapter
 ```
 
 Initialize the adapter.
