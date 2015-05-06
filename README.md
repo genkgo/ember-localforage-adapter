@@ -63,6 +63,7 @@ Since version 0.7.0 this library is also compatible with Ember Data's embedded r
 serializer like below and benefit from the often superior approach of doing complex object graphs when you don't really have full control over how and when data gets loaded. See the [specific PR](https://github.com/genkgo/ember-localforage-adapter/pull/24) for more information.
 
 ```js
+# serializers/customer.js
 export default LFSerializer.extend(
   DS.EmbeddedRecordsMixin, {
     attrs: {
