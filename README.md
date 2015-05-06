@@ -59,8 +59,8 @@ behaviour therefore is `model`. This means: if you query one model, it will fetc
 
 ### Embedded records
 
-Since version 0.7.0 this library is also compatible with Ember Data's embedded records, include the embedded attributes in your
-serializer like below and benefit from the superior approach of doing complex object graphs when you don't really have full control over how and when data gets loaded. See the [specific PR](https://github.com/genkgo/ember-localforage-adapter/pull/24) for more information.
+Since version 0.7.0 this library is also compatible with Ember Data's embedded records. Include the embedded attributes in your
+serializer like below and benefit from the often superior approach of doing complex object graphs when you don't really have full control over how and when data gets loaded. See the [specific PR](https://github.com/genkgo/ember-localforage-adapter/pull/24) for more information.
 
 ```js
 export default LFSerializer.extend(
