@@ -57,6 +57,21 @@ export default LFAdapter.extend({
 While `all` will reduce the number of calls to getItem (for reading) to only one, you will fetch all your data in memory. The default
 behaviour therefore is `model`. This means: if you query one model, it will fetch all the items of that model from localforage.
 
+### Embedded records
+
+Since version 0.7.0 this library is also compatible with Ember Data's embedded records, include the embedded attributes in your
+serializer like below and benefit from the superior approach of doing complex object graphs when you don't really have full control over how and when data gets loaded. See the [specific PR](https://github.com/genkgo/ember-localforage-adapter/pull/24) for more information.
+
+```js
+export default LFSerializer.extend(
+  DS.EmbeddedRecordsMixin, {
+    attrs: {
+      addresses: { embedded: 'always' },
+      hour: { embedded: 'always' }
+    }
+  }
+);
+```
 
 Support
 ----
