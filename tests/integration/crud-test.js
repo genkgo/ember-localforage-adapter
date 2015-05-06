@@ -42,6 +42,23 @@ var FIXTURES = {
       'h3': { id: 'h3', name: 'three', amount: 2, order: 'o3' },
       'h4': { id: 'h4', name: 'four', amount: 1, order: 'o3' }
     }
+  },
+
+  'customer': {
+    records: {
+      '1': {
+        id: '1',
+        customerNumber: '123',
+        addresses: [
+          { id: '1', addressNumber: '12345' },
+          { id: '2', addressNumber: '54321' }
+        ],
+        hour: {
+          id: 'h5',
+          name: 'five'
+        }
+      }
+    }
   }
 };
 
@@ -429,5 +446,108 @@ test('saves hasMany', function() {
   });
 });
 
+test("loads embedded hasMany in a 'find with id' operation", function() {
+  expect(5);
 
+  stop();
 
+  run(function() {
+    store.find('customer', '1').then(function(customer) {
+      var addresses = customer.get('addresses');
+
+      equal(addresses.length, 2);
+      var address1 = addresses.get('firstObject'),
+          address2 = addresses.get('lastObject');
+
+      equal(get(address1, 'id'), '1',
+        'first address id is loaded correctly');
+      equal(get(address1, 'addressNumber'), '12345',
+        'first address number is loaded correctly');
+      equal(get(address2, 'id'), '2',
+        'first address id is loaded correctly');
+      equal(get(address2, 'addressNumber'), '54321',
+        'first address number is loaded correctly');
+
+      start();
+    });
+  });
+});
+
+test("loads embedded hasMany in a 'find all' operation", function() {
+  expect(6);
+
+  stop();
+
+  run(function() {
+    store.find('customer').then(function(customers) {
+      equal(get(customers, 'length'), 1, 'one customer was retrieved');
+
+      var customer = customers.objectAt(0);
+      var addresses = customer.get('addresses');
+
+      equal(addresses.length, 2);
+      var address1 = addresses.get('firstObject'),
+          address2 = addresses.get('lastObject');
+
+      equal(get(address1, 'id'), '1',
+        'first address id is loaded correctly');
+      equal(get(address1, 'addressNumber'), '12345',
+        'first address number is loaded correctly');
+      equal(get(address2, 'id'), '2',
+        'first address id is loaded correctly');
+      equal(get(address2, 'addressNumber'), '54321',
+        'first address number is loaded correctly');
+
+      start();
+    });
+  });
+});
+
+test("loads embedded hasMany in a 'find many' operation", function() {
+  expect(6);
+
+  stop();
+
+  run(function() {
+    store.find('customer', { customerNumber: '123' }).then(function(customers) {
+      equal(get(customers, 'length'), 1);
+
+      var customer = customers.objectAt(0);
+      var addresses = customer.get('addresses');
+
+      equal(addresses.length, 2);
+      var address1 = addresses.get('firstObject'),
+          address2 = addresses.get('lastObject');
+
+      equal(get(address1, 'id'), '1',
+        'first address id is loaded correctly');
+      equal(get(address1, 'addressNumber'), '12345',
+        'first address number is loaded correctly');
+      equal(get(address2, 'id'), '2',
+        'first address id is loaded correctly');
+      equal(get(address2, 'addressNumber'), '54321',
+        'first address number is loaded correctly');
+
+      start();
+    });
+  });
+});
+
+test("loads embedded belongsTo in a 'find with id' operation", function() {
+  expect(2);
+
+  stop();
+
+  run(function() {
+    store.find('customer', '1').then(function(customer) {
+      var hour = customer.get('hour');
+
+     equal(get(hour, 'id'), 'h5',
+        'hour id is loaded correctly');
+      equal(get(hour, 'name'), 'five',
+        'hour name is loaded correctly');
+
+      start();
+    });
+  });
+});

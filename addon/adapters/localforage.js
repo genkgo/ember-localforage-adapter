@@ -42,7 +42,7 @@ export default DS.Adapter.extend(Ember.Evented, {
           }
 
           if (allowRecursive) {
-            adapter.loadRelationships(type, record).then(function(finalRecord) {
+            adapter.loadRelationships(store, type, record).then(function(finalRecord) {
               resolve(finalRecord);
             });
           } else {
@@ -67,7 +67,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
     }).then(function(records) {
       if (records.get('length')) {
-        return adapter.loadRelationshipsForMany(type, records);
+        return adapter.loadRelationshipsForMany(store, type, records);
       } else {
         return records;
       }
@@ -95,7 +95,7 @@ export default DS.Adapter.extend(Ember.Evented, {
         var results = adapter.query(namespace.records, query);
 
           if (results.get('length')) {
-            results = adapter.loadRelationshipsForMany(type, results);
+            results = adapter.loadRelationshipsForMany(store, type, results);
           }
 
           resolve(results);
@@ -272,10 +272,11 @@ export default DS.Adapter.extend(Ember.Evented, {
    *
    * @method loadRelationships
    * @private
+   * @param {DS.Store} store
    * @param {DS.Model} type
    * @param {Object} record
    */
-  loadRelationships: function(type, record) {
+  loadRelationships: function(store, type, record) {
     var adapter = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
@@ -314,11 +315,14 @@ export default DS.Adapter.extend(Ember.Evented, {
          * In this case, cart belongsTo customer and its id is present in the
          * main payload. We find each of these records and add them to _embedded.
          */
-        if (relationEmbeddedId) {
+        var embeddedAlways = adapter.isEmbeddedAlways(store, type.typeKey, relationProp.key);
+
+        // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
+        if (relationEmbeddedId && !embeddedAlways) {
           if (relationType === 'belongsTo' || relationType === 'hasOne') {
-            promise = adapter.find(null, relationModel, relationEmbeddedId, opts);
+            promise = adapter.find(store, relationModel, relationEmbeddedId, opts);
           } else if (relationType === 'hasMany') {
-            promise = adapter.findMany(null, relationModel, relationEmbeddedId, opts);
+            promise = adapter.findMany(store, relationModel, relationEmbeddedId, opts);
           }
 
           embedPromise = new Ember.RSVP.Promise(function(resolve, reject) {
@@ -413,10 +417,11 @@ export default DS.Adapter.extend(Ember.Evented, {
    *
    * @method loadRelationshipsForMany
    * @private
+   * @param {DS.Store} store
    * @param {DS.Model} type
    * @param {Object} recordsArray
    */
-  loadRelationshipsForMany: function(type, recordsArray) {
+  loadRelationshipsForMany: function(store, type, recordsArray) {
     var adapter = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
@@ -440,7 +445,7 @@ export default DS.Adapter.extend(Ember.Evented, {
          */
         recordsToBeLoaded = recordsToBeLoaded.slice(1);
 
-        var promise = adapter.loadRelationships(type, record);
+        var promise = adapter.loadRelationships(store, type, record);
 
         promise.then(function(recordWithRelationships) {
           recordsWithRelationships.push(recordWithRelationships);
@@ -475,6 +480,17 @@ export default DS.Adapter.extend(Ember.Evented, {
     } else {
       return relationships;
     }
+  },
+
+  isEmbeddedAlways: function(store, typeKey, relationKey) {
+    if (store === undefined || store === null) {
+      return false;
+    }
+
+    var serializer = store.serializerFor(typeKey);
+    var embeddedAlways = typeof(serializer.hasEmbeddedAlwaysOption) === 'function' &&
+      serializer.hasEmbeddedAlwaysOption(relationKey);
+    return embeddedAlways;
   }
 });
 
