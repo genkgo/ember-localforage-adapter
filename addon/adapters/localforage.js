@@ -229,7 +229,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   modelNamespace: function(type) {
-    return type.url || type.typeKey;
+    return type.url || type.modelName;
   },
 
 
@@ -281,7 +281,7 @@ export default DS.Adapter.extend(Ember.Evented, {
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       var resultJSON = {},
-          typeKey = type.typeKey,
+          modelName = type.modelName,
           relationshipNames, relationships,
           relationshipPromises = [];
 
@@ -315,7 +315,7 @@ export default DS.Adapter.extend(Ember.Evented, {
          * In this case, cart belongsTo customer and its id is present in the
          * main payload. We find each of these records and add them to _embedded.
          */
-        var embeddedAlways = adapter.isEmbeddedAlways(store, type.typeKey, relationProp.key);
+        var embeddedAlways = adapter.isEmbeddedAlways(store, type.modelName, relationProp.key);
 
         // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
         if (relationEmbeddedId && !embeddedAlways) {
@@ -482,12 +482,12 @@ export default DS.Adapter.extend(Ember.Evented, {
     }
   },
 
-  isEmbeddedAlways: function(store, typeKey, relationKey) {
+  isEmbeddedAlways: function(store, modelName, relationKey) {
     if (store === undefined || store === null) {
       return false;
     }
 
-    var serializer = store.serializerFor(typeKey);
+    var serializer = store.serializerFor(modelName);
     var embeddedAlways = typeof(serializer.hasEmbeddedAlwaysOption) === 'function' &&
       serializer.hasEmbeddedAlwaysOption(relationKey);
     return embeddedAlways;
@@ -498,7 +498,7 @@ function updateOrCreate(store, type, snapshot) {
   var adapter = this;
   return this.queue.attach(function(resolve, reject) {
     adapter._namespaceForType(type).then (function (namespaceRecords) {
-      var serializer = store.serializerFor(type.typeKey);
+      var serializer = store.serializerFor(type.modelName);
       var recordHash = serializer.serialize(snapshot, {includeId: true});
       // update(id comes from snapshot) or create(id comes from serialization)
       var id = snapshot.id || recordHash.id;
