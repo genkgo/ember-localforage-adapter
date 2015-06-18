@@ -1,9 +1,9 @@
 export default {
   'list': {
     records: {
-      'l1': { id: 'l1', name: 'one', b: true, items: ['i1', 'i2'] },
-      'l2': { id: 'l2', name: 'two', b: false, items: [] },
-      'l3': { id: 'l3', name: 'three', b: false, items: [] }
+      'l1': { id: 'l1', name: 'one', b: true, items: ['i1', 'i2'], day: 24 },
+      'l2': { id: 'l2', name: 'two', b: false, items: [], day: 48 },
+      'l3': { id: 'l3', name: 'three', b: false, items: [], day: 72 }
     }
   },
 
@@ -29,6 +29,23 @@ export default {
       'h2': { id: 'h2', name: 'two', amount: 3, order: 'o1' },
       'h3': { id: 'h3', name: 'three', amount: 2, order: 'o3' },
       'h4': { id: 'h4', name: 'four', amount: 1, order: 'o3' }
+    }
+  },
+
+  'customer': {
+    records: {
+      '1': {
+        id: '1',
+        customerNumber: '123',
+        addresses: [
+          { id: '1', addressNumber: '12345' },
+          { id: '2', addressNumber: '54321' }
+        ],
+        hour: {
+          id: 'h5',
+          name: 'five'
+        }
+      }
     }
   }
 };

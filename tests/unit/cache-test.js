@@ -11,73 +11,73 @@ var set = Ember.set;
 var guidFor = Ember.guidFor;
 
 var FIXTURES = [{
-    id : 1,
-    name: "test"
+  id: 1,
+  name: "test"
 }];
 
 module('Cache helper', {
-    setup: function() {
-        cache = LFCache.create();
+  setup: function () {
+    cache = LFCache.create();
 
-        run(function () {
-            App = startApp();
-        });
-    },
+    run(function () {
+      App = startApp();
+    });
+  },
 
-    teardown: function() {
-        run(App, 'destroy');
-    }
+  teardown: function () {
+    run(App, 'destroy');
+  }
 });
 
-test('cache uses copies when using set', function() {
-    expect(2);
-    stop();
+test('cache uses copies when using set', function () {
+  expect(2);
+  stop();
 
-    run(function() {
-        cache.set('modelname', FIXTURES);
+  run(function () {
+    cache.set('modelname', FIXTURES);
 
-        var cacheResponse = cache.get('modelname');
+    var cacheResponse = cache.get('modelname');
 
-        deepEqual(FIXTURES[0], cacheResponse[0]);
-        notStrictEqual(FIXTURES[0], cacheResponse[0]);
-        start();
-    });
+    deepEqual(FIXTURES[0], cacheResponse[0]);
+    notStrictEqual(FIXTURES[0], cacheResponse[0]);
+    start();
+  });
 });
 
-test('cache uses copies when using replace', function() {
-    expect(3);
-    stop();
+test('cache uses copies when using replace', function () {
+  expect(3);
+  stop();
 
-    run(function() {
-        var replacement = {
-            "modelname": [{
-                id : 1,
-                name: "replace"
-            }]
-        };
+  run(function () {
+    var replacement = {
+      "modelname": [{
+        id: 1,
+        name: "replace"
+      }]
+    };
 
-        cache.set('modelname', FIXTURES);
-        cache.replace(replacement);
+    cache.set('modelname', FIXTURES);
+    cache.replace(replacement);
 
-        var cacheResponse = cache.get('modelname');
-        var replaceResponse = replacement["modelname"];
+    var cacheResponse = cache.get('modelname');
+    var replaceResponse = replacement["modelname"];
 
-        deepEqual(replaceResponse[0], cacheResponse[0]);
-        notStrictEqual(replaceResponse[0], cacheResponse[0]);
-        notDeepEqual(FIXTURES[0], cacheResponse[0]);
-        start();
-    });
+    deepEqual(replaceResponse[0], cacheResponse[0]);
+    notStrictEqual(replaceResponse[0], cacheResponse[0]);
+    notDeepEqual(FIXTURES[0], cacheResponse[0]);
+    start();
+  });
 });
 
-test('cache clear', function() {
-    expect(1);
-    stop();
+test('cache clear', function () {
+  expect(1);
+  stop();
 
-    run(function() {
-        cache.set('modelname', FIXTURES);
-        cache.clear();
+  run(function () {
+    cache.set('modelname', FIXTURES);
+    cache.clear();
 
-        deepEqual(null, cache.get('modelname'));
-        start();
-    });
+    deepEqual(null, cache.get('modelname'));
+    start();
+  });
 });
