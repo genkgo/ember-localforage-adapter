@@ -29,6 +29,8 @@ import LFAdapter from 'ember-localforage-adapter/adapters/localforage';
 export default LFAdapter;
 ```
 
+For a more thorough introduction how to use this adapter, please read [Models and application data](https://developer.mozilla.org/en-US/Apps/Build/Modern_web_app_architecture/Models_and_application_data) on the MDN website of Mozilla.
+
 ### Localforage Namespace
 
 All of your application data lives on a single `localforage` key, it defaults to `DS.LFAdapter` but if you supply a `namespace` option it will store it there:
