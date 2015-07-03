@@ -53,7 +53,7 @@ export default DS.JSONSerializer.extend({
   extractSingle: function(store, type, payload) {
     if (payload && payload._embedded) {
       for (var relation in payload._embedded) {
-        var relType = type.typeForRelationship(relation);
+        var relType = type.typeForRelationship(relation, store);
         var typeName = relType.typeKey,
             embeddedPayload = payload._embedded[relation];
 
