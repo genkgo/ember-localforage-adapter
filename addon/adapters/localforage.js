@@ -287,8 +287,6 @@ export default DS.Adapter.extend(Ember.Evented, {
         relationships = relationshipNames.belongsTo;
         relationships = relationships.concat(relationshipNames.hasMany);
 
-
-        console.log('LOCALFORAGE', type, store)
         relationships.forEach(function(relationName) {
           var relationModel = type.typeForRelationship(relationName, store),
             relationEmbeddedId = record[relationName],
