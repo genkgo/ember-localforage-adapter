@@ -278,71 +278,78 @@ export default DS.Adapter.extend(Ember.Evented, {
    */
   loadRelationships: function(store, type, record) {
     var adapter = this;
-
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      var resultJSON = {},
-          modelName = type.modelName,
-          relationshipNames, relationships,
+    if (record) {
+      return new Ember.RSVP.Promise(function(resolve) {
+        var relationshipNames, relationships,
           relationshipPromises = [];
 
-      relationshipNames = Ember.get(type, 'relationshipNames');
-      relationships = relationshipNames.belongsTo;
-      relationships = relationships.concat(relationshipNames.hasMany);
+        relationshipNames = Ember.get(type, 'relationshipNames');
+        relationships = relationshipNames.belongsTo;
+        relationships = relationships.concat(relationshipNames.hasMany);
 
-      relationships.forEach(function(relationName) {
-        var relationModel = type.typeForRelationship(relationName),
+
+        relationships.forEach(function(relationName) {
+          var relationModel = type.typeForRelationship(relationName),
             relationEmbeddedId = record[relationName],
-            relationProp  = adapter.relationshipProperties(type, relationName),
-            relationType  = relationProp.kind,
+            relationProp = adapter.relationshipProperties(type, relationName),
+            relationType = relationProp.kind,
             /**
              * This is the relationship field.
              */
             promise, embedPromise;
 
-        var opts = {allowRecursive: false};
+          var opts = {
+            allowRecursive: false
+          };
 
-        /**
-         * embeddedIds are ids of relations that are included in the main
-         * payload, such as:
-         *
-         * {
-         *    cart: {
-         *      id: "s85fb",
-         *      customer: "rld9u"
-         *    }
-         * }
-         *
-         * In this case, cart belongsTo customer and its id is present in the
-         * main payload. We find each of these records and add them to _embedded.
-         */
-        var embeddedAlways = adapter.isEmbeddedAlways(store, type.modelName, relationProp.key);
+          /**
+           * embeddedIds are ids of relations that are included in the main
+           * payload, such as:
+           *
+           * {
+           *    cart: {
+           *      id: "s85fb",
+           *      customer: "rld9u"
+           *    }
+           * }
+           *
+           * In this case, cart belongsTo customer and its id is present in the
+           * main payload. We find each of these records and add them to _embedded.
+           */
+          var embeddedAlways = adapter.isEmbeddedAlways(store, type.modelName, relationProp.key);
 
-        // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
-        if (relationEmbeddedId && !embeddedAlways) {
-          if (relationType === 'belongsTo' || relationType === 'hasOne') {
-            promise = adapter.find(store, relationModel, relationEmbeddedId, opts);
-          } else if (relationType === 'hasMany') {
-            promise = adapter.findMany(store, relationModel, relationEmbeddedId, opts);
-          }
+          // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
 
-          embedPromise = new Ember.RSVP.Promise(function(resolve, reject) {
-            promise.then(function(relationRecord) {
-              var finalPayload = adapter.addEmbeddedPayload(record, relationName, relationRecord);
-              resolve(finalPayload);
+          if (relationEmbeddedId && !embeddedAlways) {
+            if (relationType === 'belongsTo' || relationType === 'hasOne') {
+              promise = adapter.find(store, relationModel, relationEmbeddedId, opts, true);
+            } else if (relationType === 'hasMany') {
+              promise = adapter.findMany(store, relationModel, relationEmbeddedId, opts, true);
+            }
+
+            embedPromise = new Ember.RSVP.Promise(function(resolve) {
+              promise.then(function(relationRecord) {
+                if (relationRecord) {
+                  var finalPayload = adapter.addEmbeddedPayload(record, relationName, relationRecord);
+                  resolve(finalPayload);
+
+                }
+
+              });
             });
-          });
 
-          relationshipPromises.push(embedPromise);
-        }
+            relationshipPromises.push(embedPromise);
+          }
+        });
+
+        Ember.RSVP.all(relationshipPromises).then(function() {
+          resolve(record);
+        });
       });
 
-      Ember.RSVP.all(relationshipPromises).then(function() {
-        resolve(record);
-      });
-    });
+    }
+    return Ember.RSVP.resolve();
   },
-
-
   /**
    * Given the following payload,
    *
@@ -382,8 +389,8 @@ export default DS.Adapter.extend(Ember.Evented, {
    */
   addEmbeddedPayload: function(payload, relationshipName, relationshipRecord) {
     var objectHasId = (relationshipRecord && relationshipRecord.id),
-        arrayHasIds = (relationshipRecord.length && relationshipRecord.everyBy("id")),
-        isValidRelationship = (objectHasId || arrayHasIds);
+      arrayHasIds = (relationshipRecord[0] && relationshipRecord.length && relationshipRecord.everyBy("id")),
+      isValidRelationship = (objectHasId || arrayHasIds);
 
     if (isValidRelationship) {
       if (!payload._embedded) {
@@ -406,6 +413,7 @@ export default DS.Adapter.extend(Ember.Evented, {
 
     return payload;
   },
+
 
 
   isArray: function(value) {
