@@ -89,10 +89,13 @@ export default DS.Adapter.extend(Ember.Evented, {
   //
   //    { complete: true, name: /foo|bar/ }
   findQuery: function (store, type, query, recordArray) {
-      var adapter = this;
+    this.query.apply(this, arguments);
+  },
+  query: function (store, type, query, recordArray) {
+    var adapter = this;
     return new Ember.RSVP.Promise(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespace) {
-        var results = adapter.query(namespace.records, query);
+        var results = adapter._forageQuery(namespace.records, query);
 
           if (results.get('length')) {
             results = adapter.loadRelationshipsForMany(store, type, results);
@@ -101,10 +104,9 @@ export default DS.Adapter.extend(Ember.Evented, {
           resolve(results);
      });
     });
-
   },
 
-  query: function (records, query) {
+  _forageQuery: function (records, query) {
     var results = [],
         id, record, property, test, push;
     for (id in records) {
