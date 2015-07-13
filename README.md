@@ -10,6 +10,7 @@ It is supported by all major browsers, including mobile.
 [![Build Status](https://travis-ci.org/genkgo/ember-localforage-adapter.png?branch=master)](https://travis-ci.org/genkgo/ember-localforage-adapter)
 [![npm version](https://badge.fury.io/js/ember-localforage-adapter.svg)](http://badge.fury.io/js/ember-localforage-adapter)
 [![Bower version](https://badge.fury.io/bo/ember-localforage-adapter.svg)](http://badge.fury.io/bo/ember-localforage-adapter)
+[![Ember Observer Score](http://emberobserver.com/badges/ember-localforage-adapter.svg)](http://emberobserver.com/addons/ember-localforage-adapter)
 
 Usage
 -----
