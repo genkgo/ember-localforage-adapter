@@ -10,7 +10,7 @@ export default DS.JSONSerializer.extend({
     if (relationshipType === 'manyToNone' ||
         relationshipType === 'manyToMany' ||
         relationshipType === 'manyToOne') {
-      json[key] = snapshot.hasMany(key).mapBy('id');
+      json[key] = Ember.A(snapshot.hasMany(key)).mapBy('id');
     // TODO support for polymorphic manyToNone and manyToMany relationships
     }
   },

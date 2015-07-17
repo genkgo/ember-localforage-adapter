@@ -56,17 +56,20 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
-    adapter._namespaceForType(type).then (function (namespace) {
-      var results = [];
+      adapter._namespaceForType(type).then (function (namespace) {
+        var results = [];
 
-          for (var i = 0; i < ids.length; i++) {
-            results.push(Ember.copy(namespace.records[ids[i]]));
+        for (var i = 0; i < ids.length; i++) {
+          let recordToPush = namespace.records[ids[i]];
+          if (recordToPush) {
+            results.push(Ember.copy(recordToPush));
           }
+        }
 
-          resolve(results);
-    });
+        resolve(results);
+      });
     }).then(function(records) {
-      if (records.get('length')) {
+      if (records.length) {
         return adapter.loadRelationshipsForMany(store, type, records);
       } else {
         return records;
@@ -390,7 +393,7 @@ export default DS.Adapter.extend(Ember.Evented, {
    */
   addEmbeddedPayload: function(payload, relationshipName, relationshipRecord) {
     var objectHasId = (relationshipRecord && relationshipRecord.id),
-      arrayHasIds = (relationshipRecord[0] && relationshipRecord.length && relationshipRecord.everyBy("id")),
+      arrayHasIds = (relationshipRecord[0] && relationshipRecord.length && Ember.A(relationshipRecord).isEvery("id")),
       isValidRelationship = (objectHasId || arrayHasIds);
 
     if (isValidRelationship) {
@@ -507,7 +510,8 @@ function updateOrCreate(store, type, snapshot) {
   var adapter = this;
   return this.queue.attach(function(resolve, reject) {
     adapter._namespaceForType(type).then (function (namespaceRecords) {
-      var serializer = store.serializerFor(type.modelName);
+      // This is fix for ember-data-offline, but probably it is better solution in general too
+      var serializer = store.adapterFor(type.modelName).serializer;
       var recordHash = serializer.serialize(snapshot, {includeId: true});
       // update(id comes from snapshot) or create(id comes from serialization)
       var id = snapshot.id || recordHash.id;
