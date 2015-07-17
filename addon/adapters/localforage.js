@@ -100,7 +100,7 @@ export default DS.Adapter.extend(Ember.Evented, {
       adapter._namespaceForType(type).then (function (namespace) {
         var results = adapter._forageQuery(namespace.records, query);
 
-          if (results.get('length')) {
+          if (results.length) {
             results = adapter.loadRelationshipsForMany(store, type, results);
           }
 
@@ -326,9 +326,9 @@ export default DS.Adapter.extend(Ember.Evented, {
 
           if (relationEmbeddedId && !embeddedAlways) {
             if (relationType === 'belongsTo' || relationType === 'hasOne') {
-              promise = adapter.find(store, relationModel, relationEmbeddedId, opts, true);
+              promise = adapter.find(store, relationModel, relationEmbeddedId, opts);
             } else if (relationType === 'hasMany') {
-              promise = adapter.findMany(store, relationModel, relationEmbeddedId, opts, true);
+              promise = adapter.findMany(store, relationModel, relationEmbeddedId, opts);
             }
 
             embedPromise = new Ember.RSVP.Promise(function(resolve) {
