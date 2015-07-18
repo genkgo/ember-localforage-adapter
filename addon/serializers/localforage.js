@@ -4,8 +4,9 @@ import DS from 'ember-data';
 export default DS.JSONSerializer.extend({
 
   serializeHasMany: function(snapshot, json, relationship) {
+    var store = this.container.lookup('service:store');
     var key = relationship.key,
-        relationshipType = snapshot.type.determineRelationshipType(relationship);
+        relationshipType = snapshot.type.determineRelationshipType(relationship, store);
 
     if (relationshipType === 'manyToNone' ||
         relationshipType === 'manyToMany' ||
