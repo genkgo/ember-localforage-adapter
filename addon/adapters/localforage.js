@@ -62,7 +62,8 @@ export default DS.Adapter.extend(Ember.Evented, {
         for (var i = 0; i < ids.length; i++) {
           let recordToPush = namespace.records[ids[i]];
           if (recordToPush) {
-            results.push(Ember.copy(recordToPush));
+            // results.push(Ember.copy(recordToPush));
+            results.push(Ember.merge({}, recordToPush));
           }
         }
 
@@ -137,7 +138,8 @@ export default DS.Adapter.extend(Ember.Evented, {
         var results = [];
 
         for (var id in namespace.records) {
-          results.push(Ember.copy(namespace.records[id]));
+          // results.push(Ember.copy(namespace.records[id]));
+          results.push(Ember.merge({}, namespace.records[id]));
         }
         resolve(results);
       });
