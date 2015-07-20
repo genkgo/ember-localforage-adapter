@@ -21,33 +21,14 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
-        var allowRecursive = true;
        adapter._namespaceForType(type).then (function (namespace) {
-          /**
-             * In the case where there are relationships, this method is called again
-             * for each relation. Given the relations have references to the main
-             * object, we use allowRecursive to avoid going further into infinite
-             * recursiveness.
-             *
-             * Concept from ember-indexdb-adapter
-             */
-            if (snapshot && typeof snapshot.allowRecursive !== 'undefined') {
-              allowRecursive = snapshot.allowRecursive;
-            }
 
-          var record = Ember.A(namespace.records[id]);
+          var record = namespace.records[id];
           if (!record) {
-            reject();
-            return;
+            resolve(null);
           }
 
-          if (allowRecursive) {
-            adapter.loadRelationships(store, type, record).then(function(finalRecord) {
-              resolve(finalRecord);
-            });
-          } else {
-            resolve(record);
-          }
+          resolve(record);
         });
     });
   },
@@ -69,12 +50,6 @@ export default DS.Adapter.extend(Ember.Evented, {
 
         resolve(results);
       });
-    }).then(function(records) {
-      if (records.length) {
-        return adapter.loadRelationshipsForMany(store, type, records);
-      } else {
-        return records;
-      }
     });
   },
 
@@ -93,7 +68,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   //
   //    { complete: true, name: /foo|bar/ }
   findQuery: function (store, type, query, recordArray) {
-    this.query.apply(this, arguments);
+    return this.query.apply(this, arguments);
   },
   query: function (store, type, query, recordArray) {
     var adapter = this;
@@ -238,274 +213,6 @@ export default DS.Adapter.extend(Ember.Evented, {
   modelNamespace: function(type) {
     return type.url || type.modelName;
   },
-
-
-  /**
-   * This takes a record, then analyzes the model relationships and replaces
-   * ids with the actual values.
-   *
-   * Stolen from ember-indexdb-adapter
-   *
-   * Consider the following JSON is entered:
-   *
-   * ```js
-   * {
-   *   "id": 1,
-   *   "title": "Rails Rambo",
-   *   "comments": [1, 2]
-   * }
-   *
-   * This will return:
-   *
-   * ```js
-   * {
-   *   "id": 1,
-   *   "title": "Rails Rambo",
-   *   "comments": [1, 2]
-   *
-   *   "_embedded": {
-   *     "comment": [{
-   *       "_id": 1,
-   *       "comment_title": "FIRST"
-   *     }, {
-   *       "_id": 2,
-   *       "comment_title": "Rails is unagi"
-   *     }]
-   *   }
-   * }
-   *
-   * This way, whenever a resource returned, its relationships will be also
-   * returned.
-   *
-   * @method loadRelationships
-   * @private
-   * @param {DS.Store} store
-   * @param {DS.Model} type
-   * @param {Object} record
-   */
-  loadRelationships: function(store, type, record) {
-    var adapter = this;
-    if (record) {
-      return new Ember.RSVP.Promise(function(resolve) {
-        var relationshipNames, relationships,
-          relationshipPromises = [];
-
-        relationshipNames = Ember.get(type, 'relationshipNames');
-        relationships = relationshipNames.belongsTo;
-        relationships = relationships.concat(relationshipNames.hasMany);
-
-        relationships.forEach(function(relationName) {
-          var relationModel = type.typeForRelationship(relationName, store),
-            relationEmbeddedId = record[relationName],
-            relationProp = adapter.relationshipProperties(type, relationName),
-            relationType = relationProp.kind,
-            /**
-             * This is the relationship field.
-             */
-            promise, embedPromise;
-
-          var opts = {
-            allowRecursive: false
-          };
-
-          /**
-           * embeddedIds are ids of relations that are included in the main
-           * payload, such as:
-           *
-           * {
-           *    cart: {
-           *      id: "s85fb",
-           *      customer: "rld9u"
-           *    }
-           * }
-           *
-           * In this case, cart belongsTo customer and its id is present in the
-           * main payload. We find each of these records and add them to _embedded.
-           */
-          var embeddedAlways = adapter.isEmbeddedAlways(store, type.modelName, relationProp.key);
-
-          // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
-
-          if (relationEmbeddedId && !embeddedAlways) {
-            if (relationType === 'belongsTo' || relationType === 'hasOne') {
-              promise = adapter.find(store, relationModel, relationEmbeddedId, opts);
-            } else if (relationType === 'hasMany') {
-              promise = adapter.findMany(store, relationModel, relationEmbeddedId, opts);
-            }
-
-            embedPromise = new Ember.RSVP.Promise(function(resolve) {
-              promise.then(function(relationRecord) {
-                if (relationRecord) {
-                  var finalPayload = adapter.addEmbeddedPayload(record, relationName, relationRecord);
-                  resolve(finalPayload);
-
-                }
-
-              });
-            });
-
-            relationshipPromises.push(embedPromise);
-          }
-        });
-
-        Ember.RSVP.all(relationshipPromises).then(function() {
-          resolve(record);
-        });
-      });
-
-    }
-    return Ember.RSVP.resolve();
-  },
-  /**
-   * Given the following payload,
-   *
-   *   {
-   *      cart: {
-   *        id: "1",
-   *        customer: "2"
-   *      }
-   *   }
-   *
-   * With `relationshipName` being `customer` and `relationshipRecord`
-   *
-   *   {id: "2", name: "Rambo"}
-   *
-   * This method returns the following payload:
-   *
-   *   {
-   *      cart: {
-   *        id: "1",
-   *        customer: "2"
-   *      },
-   *      _embedded: {
-   *        customer: {
-   *          id: "2",
-   *          name: "Rambo"
-   *        }
-   *      }
-   *   }
-   *
-   * which is then treated by the serializer later.
-   *
-   * @method addEmbeddedPayload
-   * @private
-   * @param {Object} payload
-   * @param {String} relationshipName
-   * @param {Object} relationshipRecord
-   */
-  addEmbeddedPayload: function(payload, relationshipName, relationshipRecord) {
-    var objectHasId = (relationshipRecord && relationshipRecord.id),
-      arrayHasIds = (relationshipRecord[0] && relationshipRecord.length && Ember.A(relationshipRecord).isEvery("id")),
-      isValidRelationship = (objectHasId || arrayHasIds);
-
-    if (isValidRelationship) {
-      if (!payload._embedded) {
-        payload._embedded = {};
-      }
-
-      payload._embedded[relationshipName] = relationshipRecord;
-      if (relationshipRecord.length) {
-        payload[relationshipName] = relationshipRecord.mapBy('id');
-      } else {
-        payload[relationshipName] = relationshipRecord.id;
-      }
-    }
-
-    if (this.isArray(payload[relationshipName])) {
-      payload[relationshipName] = payload[relationshipName].filter(function(id) {
-        return id;
-      });
-    }
-
-    return payload;
-  },
-
-
-
-  isArray: function(value) {
-    return Object.prototype.toString.call(value) === '[object Array]';
-  },
-
-  /**
-   * Same as `loadRelationships`, but for an array of records.
-   *
-   * @method loadRelationshipsForMany
-   * @private
-   * @param {DS.Store} store
-   * @param {DS.Model} type
-   * @param {Object} recordsArray
-   */
-  loadRelationshipsForMany: function(store, type, recordsArray) {
-    var adapter = this;
-
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      var recordsWithRelationships = [],
-          recordsToBeLoaded = [],
-          promises = [];
-
-      /**
-       * Some times Ember puts some stuff in arrays. We want to clean it so
-       * we know exactly what to iterate over.
-       */
-      for (var i in recordsArray) {
-        if (recordsArray.hasOwnProperty(i)) {
-          recordsToBeLoaded.push(recordsArray[i]);
-        }
-      }
-
-      var loadNextRecord = function(record) {
-        /**
-         * Removes the first item from recordsToBeLoaded
-         */
-        recordsToBeLoaded = recordsToBeLoaded.slice(1);
-
-        var promise = adapter.loadRelationships(store, type, record);
-
-        promise.then(function(recordWithRelationships) {
-          recordsWithRelationships.push(recordWithRelationships);
-
-          if (recordsToBeLoaded[0]) {
-            loadNextRecord(recordsToBeLoaded[0]);
-          } else {
-            resolve(recordsWithRelationships);
-          }
-        });
-      };
-
-      /**
-       * We start by the first record
-       */
-      loadNextRecord(recordsToBeLoaded[0]);
-    });
-  },
-
-
-  /**
-   *
-   * @method relationshipProperties
-   * @private
-   * @param {DS.Model} type
-   * @param {String} relationName
-   */
-  relationshipProperties: function(type, relationName) {
-    var relationships = Ember.get(type, 'relationshipsByName');
-    if (relationName) {
-      return relationships.get(relationName);
-    } else {
-      return relationships;
-    }
-  },
-
-  isEmbeddedAlways: function(store, modelName, relationKey) {
-    if (store === undefined || store === null) {
-      return false;
-    }
-
-    var serializer = store.serializerFor(modelName);
-    var embeddedAlways = typeof(serializer.hasEmbeddedAlwaysOption) === 'function' &&
-      serializer.hasEmbeddedAlwaysOption(relationKey);
-    return embeddedAlways;
-  }
 });
 
 function updateOrCreate(store, type, snapshot) {
