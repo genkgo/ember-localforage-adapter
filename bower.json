@@ -25,7 +25,7 @@
   ],
   "dependencies": {
     "jquery": "^1.11.1",
-    "localforage": "~1.2.1",
+    "localforage": "1.2.4",
     "ember": "1.13.2",
     "ember-data": "1.13.4",
     "ember-resolver": "~0.1.14",
