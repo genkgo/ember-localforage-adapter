@@ -2,7 +2,11 @@ import Ember from 'ember';
 
 export default Ember.Object.extend ({
 
-  queue : [new Ember.RSVP.resolve()],
+  queue: null,
+
+  initRunner: Ember.on('init', function() {
+    this.set('queue', [new Ember.RSVP.resolve()]);
+  }),
 
   attach : function (callback) {
     var self = this;

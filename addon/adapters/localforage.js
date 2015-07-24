@@ -5,9 +5,13 @@ import LFCache from 'ember-localforage-adapter/utils/cache';
 
 export default DS.Adapter.extend(Ember.Evented, {
   defaultSerializer: 'localforage',
-  queue : LFQueue.create(),
+  queue: null,
   cache : LFCache.create(),
   caching : 'model',
+
+  initRunner: Ember.on('init', function() {
+    this.set('queue', LFQueue.create());
+  }),
 
   /**
     This is the main entry point into finding records. The first parameter to
@@ -154,8 +158,8 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
       return new Ember.RSVP.Promise(function(resolve, reject) {
         window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
-      var resolved = storage ? storage : {};
-        resolve(resolved);
+          var resolved = storage ? storage : {};
+          resolve(resolved);
         });
       });
   },
