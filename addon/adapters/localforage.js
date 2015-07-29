@@ -3,11 +3,11 @@ import DS from 'ember-data';
 import LFQueue from 'ember-localforage-adapter/utils/queue';
 import LFCache from 'ember-localforage-adapter/utils/cache';
 
-export default DS.Adapter.extend(Ember.Evented, {
+export default DS.Adapter.extend({
   defaultSerializer: 'localforage',
   queue: null,
-  cache : LFCache.create(),
-  caching : 'model',
+  cache: LFCache.create(),
+  caching: 'model',
 
   initRunner: Ember.on('init', function() {
     this.set('queue', LFQueue.create());
@@ -25,29 +25,28 @@ export default DS.Adapter.extend(Ember.Evented, {
     var adapter = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
-       adapter._namespaceForType(type).then (function (namespace) {
+      adapter._namespaceForType(type).then(function(namespace) {
 
-          var record = namespace.records[id];
-          if (!record) {
-            resolve(null);
-          }
+        var record = namespace.records[id];
+        if (!record) {
+          resolve(null);
+        }
 
-          resolve(record);
-        });
+        resolve(record);
+      });
     });
   },
 
-  findMany: function (store, type, ids) {
+  findMany: function(store, type, ids) {
     var adapter = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespace) {
+      adapter._namespaceForType(type).then(function(namespace) {
         var results = [];
 
         for (var i = 0; i < ids.length; i++) {
           let recordToPush = namespace.records[ids[i]];
           if (recordToPush) {
-            // results.push(Ember.copy(recordToPush));
             results.push(Ember.merge({}, recordToPush));
           }
         }
@@ -71,27 +70,27 @@ export default DS.Adapter.extend(Ember.Evented, {
   //  match records with "complete: true" and the name "foo" or "bar"
   //
   //    { complete: true, name: /foo|bar/ }
-  findQuery: function (store, type, query, recordArray) {
+  findQuery: function(store, type, query, recordArray) {
     return this.query.apply(this, arguments);
   },
-  query: function (store, type, query, recordArray) {
+  query: function(store, type, query, recordArray) {
     var adapter = this;
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespace) {
+      adapter._namespaceForType(type).then(function(namespace) {
         var results = adapter._forageQuery(namespace.records, query);
 
-          if (results.length) {
-            results = adapter.loadRelationshipsForMany(store, type, results);
-          }
+        if (results.length) {
+          results = adapter.loadRelationshipsForMany(store, type, results);
+        }
 
-          resolve(results);
-     });
+        resolve(results);
+      });
     });
   },
 
-  _forageQuery: function (records, query) {
+  _forageQuery: function(records, query) {
     var results = [],
-        id, record, property, test, push;
+      id, record, property, test, push;
     for (id in records) {
       record = records[id];
       for (property in query) {
@@ -110,14 +109,13 @@ export default DS.Adapter.extend(Ember.Evented, {
     return results;
   },
 
-  findAll: function (store, type) {
+  findAll: function(store, type) {
     var adapter = this;
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespace) {
+      adapter._namespaceForType(type).then(function(namespace) {
         var results = [];
 
         for (var id in namespace.records) {
-          // results.push(Ember.copy(namespace.records[id]));
           results.push(Ember.merge({}, namespace.records[id]));
         }
         resolve(results);
@@ -129,61 +127,80 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   updateRecord: updateOrCreate,
 
-  deleteRecord: function (store, type, snapshot) {
+  deleteRecord: function(store, type, snapshot) {
     var adapter = this;
-    return this.queue.attach(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = snapshot.id;
+    this.queue.attach(function(resolve, reject) {
+      adapter._namespaceForType(type).then(function(namespaceRecords) {
+        var id = snapshot.id;
 
         delete namespaceRecords.records[id];
 
-        adapter.persistData(type, namespaceRecords).then(function () {
+        adapter.persistData(type, namespaceRecords).then(function() {
           resolve();
+        }, function(err){
+          reject(err);
         });
       });
     });
+
+    return Ember.RSVP.resolve();
   },
 
-  generateIdForRecord: function () {
+  generateIdForRecord: function() {
     return Math.random().toString(32).slice(2).substr(0, 5);
   },
 
   // private
 
-  adapterNamespace: function () {
+  adapterNamespace: function() {
     return this.get('namespace') || 'DS.LFAdapter';
   },
 
-  loadData: function () {
+  loadData: function() {
     var adapter = this;
-      return new Ember.RSVP.Promise(function(resolve, reject) {
-        window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
-          var resolved = storage ? storage : {};
-          resolve(resolved);
-        });
+    let appAdapter = this.container.lookup('adapter:application');
+    return new Ember.RSVP.Promise((resolve, reject) => {
+      window.localforage.getItem(adapter.adapterNamespace()).then(function(storage) {
+        var resolved = storage ? storage : {};
+        resolve(resolved);
+      }, function(err) {
+        reject(err);
       });
+    });
   },
 
   persistData: function(type, data) {
     var adapter = this;
     var modelNamespace = this.modelNamespace(type);
-    return new Ember.RSVP.Promise(function(resolve, reject) {
+
+    return new Ember.RSVP.Promise((resolve, reject) => {
       if (adapter.caching !== 'none') {
         adapter.cache.set(modelNamespace, data);
       }
-      adapter.loadData().then(function (localStorageData) {
+      adapter.loadData().then(localStorageData => {
         localStorageData[modelNamespace] = data;
-          var toBePersisted = localStorageData;
-          window.localforage.setItem(adapter.adapterNamespace(), toBePersisted).then (function () {
-            resolve();
-          });
+        var toBePersisted = localStorageData;
+
+        if (window.isPersisting) {
+          return reject('localforage in progress');
+        }
+
+        window.isPersisting = true;
+        window.localforage.setItem(adapter.adapterNamespace(), toBePersisted).then(() => {
+          window.isPersisting = false;
+          resolve();
+        }, function(err) {
+          reject(err);
+        });
+      }, function(err) {
+        reject(err);
       });
     });
 
 
   },
 
-  _namespaceForType: function (type) {
+  _namespaceForType: function(type) {
     var namespace = this.modelNamespace(type);
     var adapter = this;
     var cache;
@@ -197,9 +214,14 @@ export default DS.Adapter.extend(Ember.Evented, {
     if (cache) {
       promise = new Ember.RSVP.resolve(cache);
     } else {
-      promise = new Ember.RSVP.Promise(function(resolve, reject) {
-      window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
-          var ns = storage ? storage[namespace] || {records: {}} : {records: {}};
+      let appAdapter = this.container.lookup('adapter:application');
+      promise = new Ember.RSVP.Promise((resolve, reject) => {
+        window.localforage.getItem(adapter.adapterNamespace()).then(function(storage) {
+          var ns = storage ? storage[namespace] || {
+            records: {}
+          } : {
+            records: {}
+          };
           if (adapter.caching === 'model') {
             adapter.cache.set(namespace, ns);
           } else if (adapter.caching === 'all') {
@@ -208,6 +230,8 @@ export default DS.Adapter.extend(Ember.Evented, {
             }
           }
           resolve(ns);
+        }, function(err) {
+          reject(err);
         });
       });
     }
@@ -221,18 +245,23 @@ export default DS.Adapter.extend(Ember.Evented, {
 
 function updateOrCreate(store, type, snapshot) {
   var adapter = this;
-  return this.queue.attach(function(resolve, reject) {
-    adapter._namespaceForType(type).then (function (namespaceRecords) {
+  this.queue.attach(function(resolve, reject) {
+    adapter._namespaceForType(type).then(function(namespaceRecords) {
       // This is fix for ember-data-offline, but probably it is better solution in general too
       var serializer = store.adapterFor(type.modelName).serializer;
-      var recordHash = serializer.serialize(snapshot, {includeId: true});
+      var recordHash = serializer.serialize(snapshot, {
+        includeId: true
+      });
       // update(id comes from snapshot) or create(id comes from serialization)
       var id = snapshot.id || recordHash.id;
 
       namespaceRecords.records[id] = recordHash;
-      adapter.persistData(type, namespaceRecords).then (function () {
+      adapter.persistData(type, namespaceRecords).then(function() {
         resolve();
+      }, function(err) {
+        reject(err);
       });
     });
   });
+  return Ember.RSVP.resolve();
 }
