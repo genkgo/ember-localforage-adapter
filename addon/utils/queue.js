@@ -10,6 +10,7 @@ export default Ember.Object.extend ({
 
     self.queue[queueKey] = new Ember.RSVP.Promise(function(resolve, reject) {
       self.queue[queueKey - 1].then (function () {
+        self.queue.splice(queueKey, 1);
         callback(resolve, reject);
       });
     });
