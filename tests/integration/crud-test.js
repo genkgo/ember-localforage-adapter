@@ -10,16 +10,21 @@ var server;
 var run = Ember.run;
 var get = Ember.get;
 var set = Ember.set;
+var setupContainer = DS._setupContainer;
 
 module('CRUD', {
   setup: function() {
-    run( function() {
-      window.localforage.setItem('DS.LFAdapter', FIXTURES);
+    stop();
+    run(function() {
+      window.localforage.setItem('DS.LFAdapter', FIXTURES).then(function() {
+        start();
+      });
     });
 
-    run( function() {
+    run(function() {
       App = startApp();
-      store = App.__container__.lookup('store:main');
+      DS._setupContainer(App.registry);
+      store = App.__container__.lookup('service:store');
       adapter = App.__container__.lookup('adapter:application');
       adapter.get('cache').clear();
     });
@@ -152,6 +157,27 @@ test('findQueryMany', function() {
   });
 });
 
+test('push', function() {
+  expect(3);
+  stop();
+
+  run(function() {
+    var list = store.push('list', { id: adapter.generateIdForRecord(), name: 'Rambo' });
+
+    list.save().then(function(record) {
+
+
+      store.findQuery('list', { name: 'Rambo' }).then(function(records) {
+        var record = records.objectAt(0);
+
+        equal(get(records, 'length'), 1, "Only Rambo was found");
+        equal(get(record,  'name'),  "Rambo", "Correct name");
+        equal(get(record,  'id'),    list.id, "Correct, original id");
+        start();
+      });
+    });
+  });
+});
 
 test('createRecord', function() {
   expect(3);
@@ -174,7 +200,6 @@ test('createRecord', function() {
     });
   });
 });
-
 
 test('updateRecords', function() {
   expect(3);
@@ -293,7 +318,7 @@ test('changes in bulk', function() {
             function(list) {
             },
             function(list) {
-              equal(get(list, 'length'), undefined, "Record was deleted successfully");
+              equal(list, undefined, "Record was deleted successfully");
               resolve();
             }
           );

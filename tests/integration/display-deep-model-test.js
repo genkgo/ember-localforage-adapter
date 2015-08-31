@@ -13,13 +13,17 @@ var set = Ember.set;
 
 module('Display deep model', {
   setup: function() {
-    run( function() {
-      window.localforage.setItem('DS.LFAdapter', FIXTURES);
+    stop();
+    run(function() {
+      window.localforage.setItem('DS.LFAdapter', FIXTURES).then(function() {
+        start();
+      });
     });
 
     run( function() {
       App = startApp();
-      store = App.__container__.lookup('store:main');
+      DS._setupContainer(App.registry);
+      store = App.__container__.lookup('service:store');
       adapter = App.__container__.lookup('adapter:application');
       adapter.get('cache').clear();
     });

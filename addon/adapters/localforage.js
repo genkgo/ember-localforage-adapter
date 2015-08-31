@@ -35,7 +35,7 @@ export default DS.Adapter.extend(Ember.Evented, {
               allowRecursive = snapshot.allowRecursive;
             }
 
-          var record = Ember.A(namespace.records[id]);
+          var record = namespace.records[id];
           if (!record) {
             reject();
             return;
@@ -290,7 +290,7 @@ export default DS.Adapter.extend(Ember.Evented, {
       relationships = relationships.concat(relationshipNames.hasMany);
 
       relationships.forEach(function(relationName) {
-        var relationModel = type.typeForRelationship(relationName),
+        var relationModel = type.typeForRelationship(relationName, store),
             relationEmbeddedId = record[relationName],
             relationProp  = adapter.relationshipProperties(type, relationName),
             relationType  = relationProp.kind,
