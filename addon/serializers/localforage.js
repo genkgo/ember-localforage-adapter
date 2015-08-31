@@ -5,12 +5,12 @@ export default DS.JSONSerializer.extend({
 
   serializeHasMany: function(snapshot, json, relationship) {
     var key = relationship.key,
-        relationshipType = snapshot.type.determineRelationshipType(relationship);
+        relationshipType = snapshot.type.determineRelationshipType(relationship, this.store);
 
     if (relationshipType === 'manyToNone' ||
         relationshipType === 'manyToMany' ||
         relationshipType === 'manyToOne') {
-      json[key] = snapshot.hasMany(key).mapBy('id');
+      json[key] = Ember.A(snapshot.hasMany(key)).mapBy('id');
     // TODO support for polymorphic manyToNone and manyToMany relationships
     }
   },
@@ -53,15 +53,18 @@ export default DS.JSONSerializer.extend({
   extractSingle: function(store, type, payload) {
     if (payload && payload._embedded) {
       for (var relation in payload._embedded) {
-        var relType = type.typeForRelationship(relation);
-        var typeName = relType.typeKey,
+        var relType = type.typeForRelationship(relation, store);
+        var typeName = relType.modelName,
             embeddedPayload = payload._embedded[relation];
 
         if (embeddedPayload) {
+          var relSerializer = store.serializerFor(typeName);
           if (Ember.isArray(embeddedPayload)) {
-            store.pushMany(typeName, embeddedPayload);
+            for (var i = 0; i < embeddedPayload.length; i++) {
+              store.push(typeName, relSerializer.normalize(relType, embeddedPayload[i]));
+            }
           } else {
-            store.push(typeName, embeddedPayload);
+            store.push(typeName, relSerializer.normalize(relType, embeddedPayload));
           }
         }
       }
