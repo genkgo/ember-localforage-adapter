@@ -26,8 +26,8 @@
   "dependencies": {
     "jquery": "^1.11.1",
     "localforage": "~1.2.1",
-    "ember": "~1.12.1",
-    "ember-data": "1.0.0-beta.19.2",
+    "ember": "^1.13.x",
+    "ember-data": "^1.13.x",
     "ember-resolver": "~0.1.14",
     "loader.js": "ember-cli/loader.js#3.3.0",
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.5",

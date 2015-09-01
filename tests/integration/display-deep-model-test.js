@@ -22,7 +22,6 @@ module('Display deep model', {
 
     run( function() {
       App = startApp();
-      DS._setupContainer(App.registry);
       store = App.__container__.lookup('service:store');
       adapter = App.__container__.lookup('adapter:application');
       adapter.get('cache').clear();

@@ -10,7 +10,6 @@ var server;
 var run = Ember.run;
 var get = Ember.get;
 var set = Ember.set;
-var setupContainer = DS._setupContainer;
 
 module('CRUD', {
   setup: function() {
@@ -23,7 +22,6 @@ module('CRUD', {
 
     run(function() {
       App = startApp();
-      DS._setupContainer(App.registry);
       store = App.__container__.lookup('service:store');
       adapter = App.__container__.lookup('adapter:application');
       adapter.get('cache').clear();
