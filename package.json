@@ -1,6 +1,6 @@
 {
   "name": "ember-localforage-adapter",
-  "version": "0.7.4",
+  "version": "1.13.0",
   "directories": {
     "doc": "doc",
     "test": "tests"
