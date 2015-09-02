@@ -130,14 +130,14 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   _query: function (records, query, singleMatch) {
-    var results = [], test, push;
+    var results = [];
 
     for (var id in records) {
       var record = records[id],
           push = false;
 
       for (var property in query) {
-        test = query[property];
+        var test = query[property];
         if (Object.prototype.toString.call(test) === '[object RegExp]') {
           push = test.test(record[property]);
         } else {
