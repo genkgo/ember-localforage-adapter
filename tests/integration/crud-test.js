@@ -94,6 +94,29 @@ test('query', function() {
 });
 
 
+test('queryRecord', function() {
+
+  stop();
+  run(function() {
+    store.queryRecord('list', { name: 'one' }).then(function(list) {
+      equal(get(list, 'id'),   'l1',  'id is loaded correctly');
+      equal(get(list, 'name'), 'one', 'name is loaded correctly');
+      equal(get(list, 'b'),    true,  'b is loaded correctly');
+      equal(get(list, 'day'),    1,  'day is loaded correctly');
+      start();
+    });
+  });
+
+  stop();
+  run(function() {
+    store.queryRecord('list', { whatever: "dude" }).catch(function(err) {
+        ok(true, "didn't find record for nonsense");
+        start();
+      }
+    );
+  });
+});
+
 test('findAll', function() {
   expect(7);
 
@@ -312,11 +335,8 @@ test('changes in bulk', function() {
 
       promises.push(
         new Ember.RSVP.Promise(function(resolve, reject) {
-          store.findRecord('list', 'l2').then(
-            function(list) {
-            },
-            function(list) {
-              equal(list, undefined, "Record was deleted successfully");
+          store.findRecord('list', 'l2').catch(function(err) {
+              ok(true, "Record was deleted successfully");
               resolve();
             }
           );

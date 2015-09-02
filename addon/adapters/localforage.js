@@ -96,7 +96,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   //  match records with "complete: true" and the name "foo" or "bar"
   //
   //    { complete: true, name: /foo|bar/ }
-  query: function (store, type, query, recordArray) {
+  query: function (store, type, query) {
       var adapter = this;
     return new Ember.RSVP.Promise(function(resolve, reject) {
       adapter._namespaceForType(type).then (function (namespace) {
@@ -112,9 +112,29 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   },
 
-  _query: function (records, query) {
-    var results = [],
-        id, record, property, test, push;
+  queryRecord: function (store, type, query) {
+      var adapter = this;
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      adapter._namespaceForType(type).then (function (namespace) {
+        var result = adapter._query(namespace.records, query, true);
+
+          if (result) {
+            result = adapter.loadRelationships(store, type, result);
+            resolve(result);
+          } else {
+            reject();
+          }
+     });
+    });
+
+  },
+
+  _query: function (records, query, singleMatch) {
+    var results, id, record, property, test, push;
+    if (!singleMatch) {
+      results = [];
+    }
+
     for (id in records) {
       record = records[id];
       for (property in query) {
@@ -127,9 +147,14 @@ export default DS.Adapter.extend(Ember.Evented, {
         }
       }
       if (push) {
-        results.push(record);
+        if (singleMatch) {
+          return record;
+        } else {
+          results.push(record);
+        }
       }
     }
+
     return results;
   },
 
