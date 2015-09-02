@@ -9,15 +9,23 @@ export default DS.Adapter.extend(Ember.Evented, {
   cache : LFCache.create(),
   caching : 'model',
 
+  shouldBackgroundReloadRecord: function (store, snapshot) {
+    return false;
+  },  
+
+  shouldReloadAll: function(store, snapshotRecordArray) {
+    return true;
+  },
+
   /**
     This is the main entry point into finding records. The first parameter to
     this method is the model's name as a string.
 
-    @method find
+    @method findRecord
     @param {DS.Model} type
     @param {Object|String|Integer|null} id
     */
-  find: function(store, type, id, snapshot) {
+  findRecord: function(store, type, id, snapshot) {
     var adapter = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
@@ -320,7 +328,7 @@ export default DS.Adapter.extend(Ember.Evented, {
         // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
         if (relationEmbeddedId && !embeddedAlways) {
           if (relationType === 'belongsTo' || relationType === 'hasOne') {
-            promise = adapter.find(store, relationModel, relationEmbeddedId, opts);
+            promise = adapter.findRecord(store, relationModel, relationEmbeddedId, opts);
           } else if (relationType === 'hasMany') {
             promise = adapter.findMany(store, relationModel, relationEmbeddedId, opts);
           }
@@ -382,7 +390,7 @@ export default DS.Adapter.extend(Ember.Evented, {
    */
   addEmbeddedPayload: function(payload, relationshipName, relationshipRecord) {
     var objectHasId = (relationshipRecord && relationshipRecord.id),
-        arrayHasIds = (relationshipRecord.length && relationshipRecord.everyBy("id")),
+        arrayHasIds = (relationshipRecord.length && relationshipRecord.isEvery("id")),
         isValidRelationship = (objectHasId || arrayHasIds);
 
     if (isValidRelationship) {

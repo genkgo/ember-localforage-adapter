@@ -5,5 +5,5 @@ var belongsTo = DS.belongsTo;
 
 export default DS.Model.extend({
   name: attr('string'),
-  list: belongsTo('list')
+  list: belongsTo('list', { async: false })
 });

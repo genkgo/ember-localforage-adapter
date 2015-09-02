@@ -34,12 +34,12 @@ module('CRUD', {
 });
 
 
-test('find with id', function() {
+test('findRecord with id', function() {
   expect(4);
 
   stop();
   run(function() {
-    store.find('list', 'l1').then(function(list) {
+    store.findRecord('list', 'l1').then(function(list) {
       equal(get(list, 'id'),   'l1',  'id is loaded correctly');
       equal(get(list, 'name'), 'one', 'name is loaded correctly');
       equal(get(list, 'b'),    true,  'b is loaded correctly');
@@ -50,11 +50,11 @@ test('find with id', function() {
 });
 
 
-test('findQuery', function() {
+test('query', function() {
 
   stop();
   run(function() {
-    store.findQuery('list', {name: /one|two/}).then(function(records) {
+    store.query('list', {name: /one|two/}).then(function(records) {
       equal(get(records, 'length'), 2, 'found results for /one|two/');
       start();
     });
@@ -62,7 +62,7 @@ test('findQuery', function() {
 
   stop();
   run(function() {
-    store.findQuery('list', {name: /.+/, id: /l1/}).then(function(records) {
+    store.query('list', {name: /.+/, id: /l1/}).then(function(records) {
       equal(get(records, 'length'), 1, 'found results for {name: /.+/, id: /l1/}');
       start();
     });
@@ -70,7 +70,7 @@ test('findQuery', function() {
 
   stop();
   run(function() {
-    store.findQuery('list', {name: 'one'}).then(function(records) {
+    store.query('list', {name: 'one'}).then(function(records) {
       equal(get(records, 'length'), 1, 'found results for name "one"');
       start();
     });
@@ -78,7 +78,7 @@ test('findQuery', function() {
 
   stop();
   run(function() {
-    store.findQuery('list', {b: true}).then(function(records) {
+    store.query('list', {b: true}).then(function(records) {
       equal(get(records, 'length'), 1, 'found results for {b: true}');
       start();
     });
@@ -86,7 +86,7 @@ test('findQuery', function() {
 
   stop();
   run(function() {
-    store.findQuery('list', {whatever: "dude"}).then(function(records) {
+    store.query('list', {whatever: "dude"}).then(function(records) {
       equal(get(records, 'length'), 0, 'didn\'t find results for nonsense');
       start();
     });
@@ -120,11 +120,11 @@ test('findAll', function() {
 });
 
 
-test('findQueryMany', function() {
+test('queryMany', function() {
   expect(11);
   stop();
   run(function() {
-    store.find('order', { b: true }).then(function(records) {
+    store.query('order', { b: true }).then(function(records) {
       var firstRecord = records.objectAt(0),
           secondRecord = records.objectAt(1),
           thirdRecord = records.objectAt(2);
@@ -160,12 +160,12 @@ test('push', function() {
   stop();
 
   run(function() {
-    var list = store.push('list', { id: adapter.generateIdForRecord(), name: 'Rambo' });
+    var list = store.push({ type: 'list', id: adapter.generateIdForRecord(), attributes: { name: 'Rambo' }});
 
     list.save().then(function(record) {
 
 
-      store.findQuery('list', { name: 'Rambo' }).then(function(records) {
+      store.query('list', { name: 'Rambo' }).then(function(records) {
         var record = records.objectAt(0);
 
         equal(get(records, 'length'), 1, "Only Rambo was found");
@@ -187,7 +187,7 @@ test('createRecord', function() {
     list.save().then(function(record) {
 
 
-      store.findQuery('list', { name: 'Rambo' }).then(function(records) {
+      store.query('list', { name: 'Rambo' }).then(function(records) {
         var record = records.objectAt(0);
 
         equal(get(records, 'length'), 1, "Only Rambo was found");
@@ -207,7 +207,7 @@ test('updateRecords', function() {
     var list = store.createRecord('list', { name: 'Rambo' });
 
     var UpdateList = function(list) {
-      return store.findQuery('list', { name: 'Rambo' }).then(function(records) {
+      return store.query('list', { name: 'Rambo' }).then(function(records) {
         var record = records.objectAt(0);
         record.set('name', 'Macgyver');
         return record.save();
@@ -215,7 +215,7 @@ test('updateRecords', function() {
     };
 
     var AssertListIsUpdated = function() {
-      return store.findQuery('list', { name: 'Macgyver' }).then(function(records) {
+      return store.query('list', { name: 'Macgyver' }).then(function(records) {
         var record = records.objectAt(0);
 
         equal(get(records, 'length'), 1,         "Only one record was found");
@@ -237,13 +237,13 @@ test('deleteRecord', function() {
 
   run(function() {
     var AssertListIsDeleted = function() {
-      return store.findQuery('list', { name: 'one' }).then(function(records) {
+      return store.query('list', { name: 'one' }).then(function(records) {
         equal(get(records, 'length'), 0, "No record was found");
         start();
       });
     };
 
-    store.findQuery('list', {name: 'one'}).then(function(lists) {
+    store.query('list', {name: 'one'}).then(function(lists) {
       var list = lists.objectAt(0);
 
       equal(get(list, "id"), "l1", "Item exists");
@@ -260,7 +260,7 @@ test('changes in bulk', function() {
   run( function() {
 
     var listToUpdate = new Ember.RSVP.Promise(function(resolve, reject) {
-      store.find('list', 'l1').then(function(list) {
+      store.findRecord('list', 'l1').then(function(list) {
         list.set('name', 'updated');
         list.save().then(function(){
           resolve();
@@ -275,7 +275,7 @@ test('changes in bulk', function() {
     });
 
     var listToDelete = new Ember.RSVP.Promise(function(resolve, reject) {
-      store.find('list', 'l2').then(function(list) {
+      store.findRecord('list', 'l2').then(function(list) {
         list.destroyRecord().then(function() {
           resolve();
         });
@@ -294,7 +294,7 @@ test('changes in bulk', function() {
 
       promises.push(
         new Ember.RSVP.Promise(function(resolve, reject) {
-          store.find('list', 'l1').then(function(list) {
+          store.findRecord('list', 'l1').then(function(list) {
             equal(get(list, 'name'), 'updated', "Record was updated successfully");
             resolve();
           });
@@ -303,7 +303,7 @@ test('changes in bulk', function() {
 
       promises.push(
         new Ember.RSVP.Promise(function(resolve, reject) {
-          store.findQuery('list', {name: 'Rambo'}).then(function(lists) {
+          store.query('list', {name: 'Rambo'}).then(function(lists) {
             equal(get(lists, 'length'), 1, "Record was created successfully");
             resolve();
           });
@@ -312,7 +312,7 @@ test('changes in bulk', function() {
 
       promises.push(
         new Ember.RSVP.Promise(function(resolve, reject) {
-          store.find('list', 'l2').then(
+          store.findRecord('list', 'l2').then(
             function(list) {
             },
             function(list) {
@@ -336,7 +336,7 @@ test('load hasMany association', function() {
   stop();
 
   run( function() {
-    store.find('list', 'l1').then(function(list) {
+    store.findRecord('list', 'l1').then(function(list) {
       var items = list.get('items');
 
       var item1 = items.get('firstObject'),
@@ -356,7 +356,7 @@ test('load hasMany association', function() {
 test('load belongsTo association', function() {
   stop();
   run(function() {
-    store.find('item', 'i1').then(function(item) {
+    store.findRecord('item', 'i1').then(function(item) {
       return new Ember.RSVP.Promise(function(resolve) { resolve(get(item, 'list')); });
     }).then(function(list) {
       equal(get(list, 'id'), 'l1', "id is loaded correctly");
@@ -374,14 +374,14 @@ test('saves belongsTo', function() {
 
   stop();
   run(function() {
-    store.find('list', listId).then(function(list) {
+    store.findRecord('list', listId).then(function(list) {
       item = store.createRecord('item', { name: 'three thousand' });
       item.set('list', list);
 
       return item.save();
     }).then(function(item) {
       store.unloadAll('item');
-      return store.find('item', item.get('id'));
+      return store.findRecord('item', item.get('id'));
     }).then(function(item) {
       var list = item.get('list');
       ok(item.get('list'), 'list is present');
@@ -398,7 +398,7 @@ test('saves hasMany', function() {
   stop();
 
   run(function() {
-    store.find('list', listId).then(function(list) {
+    store.findRecord('list', listId).then(function(list) {
       item = store.createRecord('item', { name: 'three thousand' });
       list.get('items').pushObject(item);
 
@@ -407,7 +407,7 @@ test('saves hasMany', function() {
       return item.save();
     }).then(function(item) {
       store.unloadAll('list');
-      return store.find('list', listId);
+      return store.findRecord('list', listId);
     }).then(function(list) {
       var items = list.get('items'),
           item1 = items.objectAt(0);
@@ -424,7 +424,7 @@ test("loads embedded hasMany in a 'find with id' operation", function() {
   stop();
 
   run(function() {
-    store.find('customer', '1').then(function(customer) {
+    store.findRecord('customer', '1').then(function(customer) {
       var addresses = customer.get('addresses');
 
       equal(addresses.length, 2);
@@ -451,7 +451,7 @@ test("loads embedded hasMany in a 'find all' operation", function() {
   stop();
 
   run(function() {
-    store.find('customer').then(function(customers) {
+    store.findAll('customer').then(function(customers) {
       equal(get(customers, 'length'), 1, 'one customer was retrieved');
 
       var customer = customers.objectAt(0);
@@ -481,7 +481,7 @@ test("loads embedded hasMany in a 'find many' operation", function() {
   stop();
 
   run(function() {
-    store.find('customer', { customerNumber: '123' }).then(function(customers) {
+    store.query('customer', { customerNumber: '123' }).then(function(customers) {
       equal(get(customers, 'length'), 1);
 
       var customer = customers.objectAt(0);
@@ -511,7 +511,7 @@ test("loads embedded belongsTo in a 'find with id' operation", function() {
   stop();
 
   run(function() {
-    store.find('customer', '1').then(function(customer) {
+    store.findRecord('customer', '1').then(function(customer) {
       var hour = customer.get('hour');
 
      equal(get(hour, 'id'), 'h5',
