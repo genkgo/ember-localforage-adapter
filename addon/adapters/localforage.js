@@ -133,10 +133,11 @@ export default DS.Adapter.extend(Ember.Evented, {
     var results = [], test, push;
 
     for (var id in records) {
-      var record = records[id];
-      var push = false;
+      var record = records[id],
+          push = false;
+
       for (var property in query) {
-        var test = query[property];
+        test = query[property];
         if (Object.prototype.toString.call(test) === '[object RegExp]') {
           push = test.test(record[property]);
         } else {
@@ -146,9 +147,11 @@ export default DS.Adapter.extend(Ember.Evented, {
           break; // all criteria should pass
         }
       }
+
       if (push) {
         results.push(record);
       }
+
       if (singleMatch) {
         return results[0];
       }
