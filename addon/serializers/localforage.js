@@ -3,20 +3,34 @@ import DS from 'ember-data';
 
 export default DS.JSONSerializer.extend({
 
-  serializeHasMany: function(snapshot, json, relationship) {
-    var key = relationship.key,
-        relationshipType = snapshot.type.determineRelationshipType(relationship, this.store);
+  isNewSerializerAPI: true,
 
-    if (relationshipType === 'manyToNone' ||
+  serializeHasMany: function(snapshot, json, relationship) {
+    var key = relationship.key;
+
+    if (this._canSerialize(key)) {
+      var payloadKey;
+
+      // if provided, use the mapping provided by `attrs` in
+      // the serializer
+      payloadKey = this._getMappedKey(key);
+      if (payloadKey === key && this.keyForRelationship) {
+        payloadKey = this.keyForRelationship(key, "hasMany", "serialize");
+      }
+
+      var relationshipType = snapshot.type.determineRelationshipType(relationship, this.store);
+
+      if (relationshipType === 'manyToNone' ||
         relationshipType === 'manyToMany' ||
         relationshipType === 'manyToOne') {
-      json[key] = Ember.A(snapshot.hasMany(key)).mapBy('id');
-    // TODO support for polymorphic manyToNone and manyToMany relationships
+        json[payloadKey] = snapshot.hasMany(key, { ids: true });
+        // TODO support for polymorphic manyToNone and manyToMany relationships
+      }
     }
   },
 
   /**
-   * Extracts whatever was returned from the adapter.
+   * Normalize whatever was returned from the adapter.
    *
    * If the adapter returns relationships in an embedded way, such as follows:
    *
@@ -44,27 +58,30 @@ export default DS.JSONSerializer.extend({
    * return a JSON with the main resource alone. The Store will sort out the
    * associations by itself.
    *
-   * @method extractSingle
-   * @private
-   * @param {DS.Store} store the returned store
-   * @param {DS.Model} type the type/model
+   * @method normalize
+   * @param {DS.Model} primaryModelClass the type/model
    * @param {Object} payload returned JSON
    */
-  extractSingle: function(store, type, payload) {
+  normalize: function(primaryModelClass, payload) {
+    var normalizedPayload = this._normalizeEmbeddedPayload(primaryModelClass, payload);
+    return this._super(primaryModelClass, normalizedPayload);
+  },
+
+  _normalizeEmbeddedPayload: function(primaryModelClass, payload) {
     if (payload && payload._embedded) {
       for (var relation in payload._embedded) {
-        var relType = type.typeForRelationship(relation, store);
-        var typeName = relType.modelName,
+        var relModelClass = primaryModelClass.typeForRelationship(relation, this.store);
+        var typeName = relModelClass.modelName,
             embeddedPayload = payload._embedded[relation];
 
         if (embeddedPayload) {
-          var relSerializer = store.serializerFor(typeName);
+          var relSerializer = this.store.serializerFor(typeName);
           if (Ember.isArray(embeddedPayload)) {
             for (var i = 0; i < embeddedPayload.length; i++) {
-              store.push(typeName, relSerializer.normalize(relType, embeddedPayload[i]));
+              this.store.push(relSerializer.normalize(relModelClass, embeddedPayload[i]));
             }
           } else {
-            store.push(typeName, relSerializer.normalize(relType, embeddedPayload));
+            this.store.push(relSerializer.normalize(relModelClass, embeddedPayload));
           }
         }
       }
@@ -72,24 +89,6 @@ export default DS.JSONSerializer.extend({
       delete payload._embedded;
     }
 
-    return this.normalize(type, payload);
+    return payload;
   },
-
-  /**
-   * This is exactly the same as extractSingle, but used in an array.
-   *
-   * @method extractSingle
-   * @private
-   * @param {DS.Store} store the returned store
-   * @param {DS.Model} type the type/model
-   * @param {Array} payload returned JSONs
-   */
-  extractArray: function(store, type, payload) {
-    var serializer = this;
-
-    return payload.map(function(record) {
-      return serializer.extractSingle(store, type, record);
-    });
-  }
-
 });
