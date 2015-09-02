@@ -77,6 +77,14 @@ export default LFSerializer.extend(
 );
 ```
 
+### Semantic versioning
+
+This library follows the rules of semantic versioning. If you see any unexpected API changes, please create an issue to
+resolve this. Since Ember Data released its first stable version, this library will follows the major and minor version
+numbers that Ember Data is using. So version 1.13.* will be matched by 1.13.0 of the Localforage adapter. If we build in
+new features in this adapter, they can only be released together with an update of Ember Data. Of course patches will
+always be released as soon as possible.
+
 Support
 ----
 
