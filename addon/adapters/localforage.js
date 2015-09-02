@@ -130,28 +130,30 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   _query: function (records, query, singleMatch) {
-    var results, id, record, property, test, push;
-    if (!singleMatch) {
-      results = [];
-    }
+    var results = [];
 
-    for (id in records) {
-      record = records[id];
-      for (property in query) {
-        test = query[property];
-        push = false;
+    for (var id in records) {
+      var record = records[id],
+          push = false;
+
+      for (var property in query) {
+        var test = query[property];
         if (Object.prototype.toString.call(test) === '[object RegExp]') {
           push = test.test(record[property]);
         } else {
           push = record[property] === test;
         }
-      }
-      if (push) {
-        if (singleMatch) {
-          return record;
-        } else {
-          results.push(record);
+        if (push === false) {
+          break; // all criteria should pass
         }
+      }
+
+      if (push) {
+        results.push(record);
+      }
+
+      if (singleMatch) {
+        return results[0];
       }
     }
 
