@@ -86,6 +86,22 @@ test('query', function () {
 
   stop();
   run(function () {
+    store.query('list', {name: 'two', b: false}).then(function (records) {
+      equal(get(records, 'length'), 1, 'found results for multiple criteria');
+      start();
+    });
+  });
+
+  stop();
+  run(function () {
+    store.query('list', {name: 'four', b: false}).then(function (records) {
+      equal(get(records, 'length'), 0, 'found no results when only criteria matches');
+      start();
+    });
+  });
+
+  stop();
+  run(function () {
     store.query('list', {whatever: "dude"}).then(function (records) {
       equal(get(records, 'length'), 0, 'didn\'t find results for nonsense');
       start();
