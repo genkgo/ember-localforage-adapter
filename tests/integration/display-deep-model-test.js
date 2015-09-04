@@ -12,15 +12,15 @@ var get = Ember.get;
 var set = Ember.set;
 
 module('Display deep model', {
-  setup: function() {
+  setup: function () {
     stop();
-    run(function() {
-      window.localforage.setItem('DS.LFAdapter', FIXTURES).then(function() {
+    run(function () {
+      window.localforage.setItem('DS.LFAdapter', FIXTURES).then(function () {
         start();
       });
     });
 
-    run( function() {
+    run(function () {
       App = startApp();
       store = App.__container__.lookup('service:store');
       adapter = App.__container__.lookup('adapter:application');
@@ -28,16 +28,16 @@ module('Display deep model', {
     });
   },
 
-  teardown: function() {
+  teardown: function () {
     run(App, 'destroy');
   }
 });
 
-test('find customer -> hour -> order', function() {
+test('find customer -> hour -> order', function () {
   expect(4);
 
   visit('/purchase/1');
-  andThen(function() {
+  andThen(function () {
     equal(find('div.name').text(), 'credits');
     equal(find('div.amount').text(), '10');
     equal(find('div.player').text(), 'one');

@@ -5,7 +5,7 @@ export default DS.JSONSerializer.extend({
 
   isNewSerializerAPI: true,
 
-  serializeHasMany: function(snapshot, json, relationship) {
+  serializeHasMany: function (snapshot, json, relationship) {
     var key = relationship.key;
 
     if (this._canSerialize(key)) {
@@ -23,7 +23,7 @@ export default DS.JSONSerializer.extend({
       if (relationshipType === 'manyToNone' ||
         relationshipType === 'manyToMany' ||
         relationshipType === 'manyToOne') {
-        json[payloadKey] = snapshot.hasMany(key, { ids: true });
+        json[payloadKey] = snapshot.hasMany(key, {ids: true});
         // TODO support for polymorphic manyToNone and manyToMany relationships
       }
     }
@@ -62,17 +62,17 @@ export default DS.JSONSerializer.extend({
    * @param {DS.Model} primaryModelClass the type/model
    * @param {Object} payload returned JSON
    */
-  normalize: function(primaryModelClass, payload) {
+  normalize: function (primaryModelClass, payload) {
     var normalizedPayload = this._normalizeEmbeddedPayload(primaryModelClass, payload);
     return this._super(primaryModelClass, normalizedPayload);
   },
 
-  _normalizeEmbeddedPayload: function(primaryModelClass, payload) {
+  _normalizeEmbeddedPayload: function (primaryModelClass, payload) {
     if (payload && payload._embedded) {
       for (var relation in payload._embedded) {
         var relModelClass = primaryModelClass.typeForRelationship(relation, this.store);
         var typeName = relModelClass.modelName,
-            embeddedPayload = payload._embedded[relation];
+          embeddedPayload = payload._embedded[relation];
 
         if (embeddedPayload) {
           var relSerializer = this.store.serializerFor(typeName);

@@ -1,15 +1,15 @@
 import Ember from 'ember';
 
-export default Ember.Object.extend ({
+export default Ember.Object.extend({
 
-  queue : [Ember.RSVP.resolve()],
+  queue: [Ember.RSVP.resolve()],
 
-  attach : function (callback) {
+  attach: function (callback) {
     var self = this;
     var queueKey = self.queue.length;
 
-    self.queue[queueKey] = new Ember.RSVP.Promise(function(resolve, reject) {
-      self.queue[queueKey - 1].then (function () {
+    self.queue[queueKey] = new Ember.RSVP.Promise(function (resolve, reject) {
+      self.queue[queueKey - 1].then(function () {
         callback(resolve, reject);
       });
     });

@@ -5,81 +5,81 @@ import LFCache from 'ember-localforage-adapter/utils/cache';
 
 export default DS.Adapter.extend(Ember.Evented, {
   defaultSerializer: 'localforage',
-  queue : LFQueue.create(),
-  cache : LFCache.create(),
-  caching : 'model',
+  queue: LFQueue.create(),
+  cache: LFCache.create(),
+  caching: 'model',
 
   shouldBackgroundReloadRecord: function (store, snapshot) {
     return false;
-  },  
+  },
 
-  shouldReloadAll: function(store, snapshotRecordArray) {
+  shouldReloadAll: function (store, snapshotRecordArray) {
     return true;
   },
 
   /**
-    This is the main entry point into finding records. The first parameter to
-    this method is the model's name as a string.
+   This is the main entry point into finding records. The first parameter to
+   this method is the model's name as a string.
 
-    @method findRecord
-    @param {DS.Model} type
-    @param {Object|String|Integer|null} id
-    */
-  findRecord: function(store, type, id, snapshot) {
+   @method findRecord
+   @param {DS.Model} type
+   @param {Object|String|Integer|null} id
+   */
+  findRecord: function (store, type, id, snapshot) {
     var adapter = this;
 
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-        var allowRecursive = true;
-       adapter._namespaceForType(type).then (function (namespace) {
-          /**
-             * In the case where there are relationships, this method is called again
-             * for each relation. Given the relations have references to the main
-             * object, we use allowRecursive to avoid going further into infinite
-             * recursiveness.
-             *
-             * Concept from ember-indexdb-adapter
-             */
-            if (snapshot && typeof snapshot.allowRecursive !== 'undefined') {
-              allowRecursive = snapshot.allowRecursive;
-            }
+    return new Ember.RSVP.Promise(function (resolve, reject) {
+      var allowRecursive = true;
+      adapter._namespaceForType(type).then(function (namespace) {
+        /**
+         * In the case where there are relationships, this method is called again
+         * for each relation. Given the relations have references to the main
+         * object, we use allowRecursive to avoid going further into infinite
+         * recursiveness.
+         *
+         * Concept from ember-indexdb-adapter
+         */
+        if (snapshot && typeof snapshot.allowRecursive !== 'undefined') {
+          allowRecursive = snapshot.allowRecursive;
+        }
 
-          var record = namespace.records[id];
-          if (!record) {
-            reject();
-            return;
-          }
+        var record = namespace.records[id];
+        if (!record) {
+          reject();
+          return;
+        }
 
-          if (allowRecursive) {
-            adapter.loadRelationships(store, type, record).then(function(finalRecord) {
-              resolve(finalRecord);
-            });
-          } else {
-            resolve(record);
-          }
-        });
+        if (allowRecursive) {
+          adapter.loadRelationships(store, type, record).then(function (finalRecord) {
+            resolve(finalRecord);
+          });
+        } else {
+          resolve(record);
+        }
+      });
     });
   },
 
   findMany: function (store, type, ids) {
     var adapter = this;
 
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-    adapter._namespaceForType(type).then (function (namespace) {
-      var results = [];
+    return new Ember.RSVP.Promise(function (resolve, reject) {
+      adapter._namespaceForType(type).then(function (namespace) {
+        var results = [];
 
-          for (var i = 0; i < ids.length; i++) {
-            results.push(Ember.copy(namespace.records[ids[i]]));
-          }
+        for (var i = 0; i < ids.length; i++) {
+          results.push(Ember.copy(namespace.records[ids[i]]));
+        }
 
-          resolve(results);
-    });
-    }).then(function(records) {
-      if (records.get('length')) {
-        return adapter.loadRelationshipsForMany(store, type, records);
-      } else {
-        return records;
-      }
-    });
+        resolve(results);
+      });
+    }).then(function (records) {
+        if (records.get('length')) {
+          return adapter.loadRelationshipsForMany(store, type, records);
+        } else {
+          return records;
+        }
+      });
   },
 
   // Supports queries that look like this:
@@ -97,34 +97,34 @@ export default DS.Adapter.extend(Ember.Evented, {
   //
   //    { complete: true, name: /foo|bar/ }
   query: function (store, type, query) {
-      var adapter = this;
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespace) {
+    var adapter = this;
+    return new Ember.RSVP.Promise(function (resolve, reject) {
+      adapter._namespaceForType(type).then(function (namespace) {
         var results = adapter._query(namespace.records, query);
 
-          if (results.get('length')) {
-            results = adapter.loadRelationshipsForMany(store, type, results);
-          }
+        if (results.get('length')) {
+          results = adapter.loadRelationshipsForMany(store, type, results);
+        }
 
-          resolve(results);
-     });
+        resolve(results);
+      });
     });
 
   },
 
   queryRecord: function (store, type, query) {
-      var adapter = this;
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespace) {
+    var adapter = this;
+    return new Ember.RSVP.Promise(function (resolve, reject) {
+      adapter._namespaceForType(type).then(function (namespace) {
         var result = adapter._query(namespace.records, query, true);
 
-          if (result) {
-            result = adapter.loadRelationships(store, type, result);
-            resolve(result);
-          } else {
-            reject();
-          }
-     });
+        if (result) {
+          result = adapter.loadRelationships(store, type, result);
+          resolve(result);
+        } else {
+          reject();
+        }
+      });
     });
 
   },
@@ -134,7 +134,7 @@ export default DS.Adapter.extend(Ember.Evented, {
 
     for (var id in records) {
       var record = records[id],
-          push = false;
+        push = false;
 
       for (var property in query) {
         var test = query[property];
@@ -162,8 +162,8 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   findAll: function (store, type) {
     var adapter = this;
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespace) {
+    return new Ember.RSVP.Promise(function (resolve, reject) {
+      adapter._namespaceForType(type).then(function (namespace) {
         var results = [];
 
         for (var id in namespace.records) {
@@ -180,9 +180,9 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   deleteRecord: function (store, type, snapshot) {
     var adapter = this;
-    return this.queue.attach(function(resolve, reject) {
-      adapter._namespaceForType(type).then (function (namespaceRecords) {
-           var id = snapshot.id;
+    return this.queue.attach(function (resolve, reject) {
+      adapter._namespaceForType(type).then(function (namespaceRecords) {
+        var id = snapshot.id;
 
         delete namespaceRecords.records[id];
 
@@ -205,27 +205,27 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   loadData: function () {
     var adapter = this;
-      return new Ember.RSVP.Promise(function(resolve, reject) {
-        window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
-      var resolved = storage ? storage : {};
+    return new Ember.RSVP.Promise(function (resolve, reject) {
+      window.localforage.getItem(adapter.adapterNamespace()).then(function (storage) {
+        var resolved = storage ? storage : {};
         resolve(resolved);
-        });
       });
+    });
   },
 
-  persistData: function(type, data) {
+  persistData: function (type, data) {
     var adapter = this;
     var modelNamespace = this.modelNamespace(type);
-    return new Ember.RSVP.Promise(function(resolve, reject) {
+    return new Ember.RSVP.Promise(function (resolve, reject) {
       if (adapter.caching !== 'none') {
         adapter.cache.set(modelNamespace, data);
       }
       adapter.loadData().then(function (localStorageData) {
         localStorageData[modelNamespace] = data;
-          var toBePersisted = localStorageData;
-          window.localforage.setItem(adapter.adapterNamespace(), toBePersisted).then (function () {
-            resolve();
-          });
+        var toBePersisted = localStorageData;
+        window.localforage.setItem(adapter.adapterNamespace(), toBePersisted).then(function () {
+          resolve();
+        });
       });
     });
 
@@ -246,8 +246,8 @@ export default DS.Adapter.extend(Ember.Evented, {
     if (cache) {
       promise = new Ember.RSVP.resolve(cache);
     } else {
-      promise = new Ember.RSVP.Promise(function(resolve, reject) {
-      window.localforage.getItem(adapter.adapterNamespace()).then (function (storage) {
+      promise = new Ember.RSVP.Promise(function (resolve, reject) {
+        window.localforage.getItem(adapter.adapterNamespace()).then(function (storage) {
           var ns = storage ? storage[namespace] || {records: {}} : {records: {}};
           if (adapter.caching === 'model') {
             adapter.cache.set(namespace, ns);
@@ -263,7 +263,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     return promise;
   },
 
-  modelNamespace: function(type) {
+  modelNamespace: function (type) {
     return type.url || type.modelName;
   },
 
@@ -311,28 +311,28 @@ export default DS.Adapter.extend(Ember.Evented, {
    * @param {DS.Model} type
    * @param {Object} record
    */
-  loadRelationships: function(store, type, record) {
+  loadRelationships: function (store, type, record) {
     var adapter = this;
 
-    return new Ember.RSVP.Promise(function(resolve, reject) {
+    return new Ember.RSVP.Promise(function (resolve, reject) {
       var resultJSON = {},
-          modelName = type.modelName,
-          relationshipNames, relationships,
-          relationshipPromises = [];
+        modelName = type.modelName,
+        relationshipNames, relationships,
+        relationshipPromises = [];
 
       relationshipNames = Ember.get(type, 'relationshipNames');
       relationships = relationshipNames.belongsTo;
       relationships = relationships.concat(relationshipNames.hasMany);
 
-      relationships.forEach(function(relationName) {
+      relationships.forEach(function (relationName) {
         var relationModel = type.typeForRelationship(relationName, store),
-            relationEmbeddedId = record[relationName],
-            relationProp  = adapter.relationshipProperties(type, relationName),
-            relationType  = relationProp.kind,
-            /**
-             * This is the relationship field.
-             */
-            promise, embedPromise;
+          relationEmbeddedId = record[relationName],
+          relationProp = adapter.relationshipProperties(type, relationName),
+          relationType = relationProp.kind,
+          /**
+           * This is the relationship field.
+           */
+          promise, embedPromise;
 
         var opts = {allowRecursive: false};
 
@@ -360,8 +360,8 @@ export default DS.Adapter.extend(Ember.Evented, {
             promise = adapter.findMany(store, relationModel, relationEmbeddedId, opts);
           }
 
-          embedPromise = new Ember.RSVP.Promise(function(resolve, reject) {
-            promise.then(function(relationRecord) {
+          embedPromise = new Ember.RSVP.Promise(function (resolve, reject) {
+            promise.then(function (relationRecord) {
               var finalPayload = adapter.addEmbeddedPayload(record, relationName, relationRecord);
               resolve(finalPayload);
             });
@@ -371,7 +371,7 @@ export default DS.Adapter.extend(Ember.Evented, {
         }
       });
 
-      Ember.RSVP.all(relationshipPromises).then(function() {
+      Ember.RSVP.all(relationshipPromises).then(function () {
         resolve(record);
       });
     });
@@ -415,10 +415,10 @@ export default DS.Adapter.extend(Ember.Evented, {
    * @param {String} relationshipName
    * @param {Object} relationshipRecord
    */
-  addEmbeddedPayload: function(payload, relationshipName, relationshipRecord) {
+  addEmbeddedPayload: function (payload, relationshipName, relationshipRecord) {
     var objectHasId = (relationshipRecord && relationshipRecord.id),
-        arrayHasIds = (relationshipRecord.length && relationshipRecord.isEvery("id")),
-        isValidRelationship = (objectHasId || arrayHasIds);
+      arrayHasIds = (relationshipRecord.length && relationshipRecord.isEvery("id")),
+      isValidRelationship = (objectHasId || arrayHasIds);
 
     if (isValidRelationship) {
       if (!payload._embedded) {
@@ -434,7 +434,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     }
 
     if (this.isArray(payload[relationshipName])) {
-      payload[relationshipName] = payload[relationshipName].filter(function(id) {
+      payload[relationshipName] = payload[relationshipName].filter(function (id) {
         return id;
       });
     }
@@ -443,7 +443,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
 
-  isArray: function(value) {
+  isArray: function (value) {
     return Object.prototype.toString.call(value) === '[object Array]';
   },
 
@@ -456,13 +456,13 @@ export default DS.Adapter.extend(Ember.Evented, {
    * @param {DS.Model} type
    * @param {Object} recordsArray
    */
-  loadRelationshipsForMany: function(store, type, recordsArray) {
+  loadRelationshipsForMany: function (store, type, recordsArray) {
     var adapter = this;
 
-    return new Ember.RSVP.Promise(function(resolve, reject) {
+    return new Ember.RSVP.Promise(function (resolve, reject) {
       var recordsWithRelationships = [],
-          recordsToBeLoaded = [],
-          promises = [];
+        recordsToBeLoaded = [],
+        promises = [];
 
       /**
        * Some times Ember puts some stuff in arrays. We want to clean it so
@@ -474,7 +474,7 @@ export default DS.Adapter.extend(Ember.Evented, {
         }
       }
 
-      var loadNextRecord = function(record) {
+      var loadNextRecord = function (record) {
         /**
          * Removes the first item from recordsToBeLoaded
          */
@@ -482,7 +482,7 @@ export default DS.Adapter.extend(Ember.Evented, {
 
         var promise = adapter.loadRelationships(store, type, record);
 
-        promise.then(function(recordWithRelationships) {
+        promise.then(function (recordWithRelationships) {
           recordsWithRelationships.push(recordWithRelationships);
 
           if (recordsToBeLoaded[0]) {
@@ -508,7 +508,7 @@ export default DS.Adapter.extend(Ember.Evented, {
    * @param {DS.Model} type
    * @param {String} relationName
    */
-  relationshipProperties: function(type, relationName) {
+  relationshipProperties: function (type, relationName) {
     var relationships = Ember.get(type, 'relationshipsByName');
     if (relationName) {
       return relationships.get(relationName);
@@ -517,7 +517,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     }
   },
 
-  isEmbeddedAlways: function(store, modelName, relationKey) {
+  isEmbeddedAlways: function (store, modelName, relationKey) {
     if (store === undefined || store === null) {
       return false;
     }
@@ -531,15 +531,15 @@ export default DS.Adapter.extend(Ember.Evented, {
 
 function updateOrCreate(store, type, snapshot) {
   var adapter = this;
-  return this.queue.attach(function(resolve, reject) {
-    adapter._namespaceForType(type).then (function (namespaceRecords) {
+  return this.queue.attach(function (resolve, reject) {
+    adapter._namespaceForType(type).then(function (namespaceRecords) {
       var serializer = store.serializerFor(type.modelName);
       var recordHash = serializer.serialize(snapshot, {includeId: true});
       // update(id comes from snapshot) or create(id comes from serialization)
       var id = snapshot.id || recordHash.id;
 
       namespaceRecords.records[id] = recordHash;
-      adapter.persistData(type, namespaceRecords).then (function () {
+      adapter.persistData(type, namespaceRecords).then(function () {
         resolve();
       });
     });
