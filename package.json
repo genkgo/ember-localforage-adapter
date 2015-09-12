@@ -30,7 +30,7 @@
     "glob": "^4.0.5",
     "ember-cli-qunit": "1.0.1",
     "ember-cli-uglify": "1.0.1",
-    "ember-data": "^1.13.x"
+    "ember-data": "2.0.x"
   },
   "description": "Store your ember application data in Mozilla's localforage.",
   "keywords": [

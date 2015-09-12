@@ -89,6 +89,17 @@ export default DS.JSONSerializer.extend({
       delete payload._embedded;
     }
 
+    // Remove the undefined hasMany relationships which will fail at normalization
+    // (see https://github.com/emberjs/data/issues/3736)
+    var relationshipNames = Ember.get(primaryModelClass, 'relationshipNames');
+    var relationships     = relationshipNames.hasMany;
+
+    relationships.forEach((relationName) => {
+      if (Ember.isNone(payload[relationName])) {
+        delete payload[relationName];
+      }
+    });
+
     return payload;
   },
 });
