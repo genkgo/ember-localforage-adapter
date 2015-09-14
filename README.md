@@ -1,7 +1,7 @@
 Ember Data Localforage Adapter
 ================================
 
-Store your ember application data in [Mozilla's localForage](https://github.com/mozilla/localForage). Compatible with [Ember Data 1.13.0](https://github.com/emberjs/data).
+Store your ember application data in [Mozilla's localForage](https://github.com/mozilla/localForage). Compatible with [Ember Data 2.0.0](https://github.com/emberjs/data).
 
 "localForage is a JavaScript library that improves the offline experience of your web app by using asynchronous storage (via IndexedDB or WebSQL where available) with a simple, localStorage-like API."
 
