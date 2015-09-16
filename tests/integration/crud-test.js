@@ -36,188 +36,8 @@ module('CRUD', {
   }
 });
 
-
-test('findRecord with id', function() {
-  expect(4);
-
-  stop();
-  run(function() {
-    store.findRecord('list', 'l1').then(function(list) {
-      equal(get(list, 'id'), 'l1', 'id is loaded correctly');
-      equal(get(list, 'name'), 'one', 'name is loaded correctly');
-      equal(get(list, 'b'), true, 'b is loaded correctly');
-      equal(get(list, 'day'), 1, 'day is loaded correctly');
-      start();
-    });
-  });
-});
-
-
-test('query', function() {
-
-  stop();
-  run(function() {
-    store.query('list', {
-      name: /one|two/
-    }).then(function(records) {
-      equal(get(records, 'length'), 2, 'found results for /one|two/');
-      start();
-    });
-  });
-
-  stop();
-  run(function() {
-    store.query('list', {
-      name: /.+/,
-      id: /l1/
-    }).then(function(records) {
-      equal(get(records, 'length'), 1, 'found results for {name: /.+/, id: /l1/}');
-      start();
-    });
-  });
-
-  stop();
-  run(function() {
-    store.query('list', {
-      name: 'one'
-    }).then(function(records) {
-      equal(get(records, 'length'), 1, 'found results for name "one"');
-      start();
-    });
-  });
-
-  stop();
-  run(function() {
-    store.query('list', {
-      b: true
-    }).then(function(records) {
-      equal(get(records, 'length'), 1, 'found results for {b: true}');
-      start();
-    });
-  });
-
-  stop();
-  run(function() {
-    store.query('list', {
-      name: 'two',
-      b: false
-    }).then(function(records) {
-      equal(get(records, 'length'), 1, 'found results for multiple criteria');
-      start();
-    });
-  });
-
-  stop();
-  run(function() {
-    store.query('list', {
-      name: 'four',
-      b: false
-    }).then(function(records) {
-      equal(get(records, 'length'), 0, 'found no results when only criteria matches');
-      start();
-    });
-  });
-
-  stop();
-  run(function() {
-    store.query('list', {
-      whatever: "dude"
-    }).then(function(records) {
-      equal(get(records, 'length'), 0, 'didn\'t find results for nonsense');
-      start();
-    });
-  });
-});
-
-
-test('queryRecord', function() {
-
-  stop();
-  run(function() {
-    store.queryRecord('list', {
-      name: 'one'
-    }).then(function(list) {
-      equal(get(list, 'id'), 'l1', 'id is loaded correctly');
-      equal(get(list, 'name'), 'one', 'name is loaded correctly');
-      equal(get(list, 'b'), true, 'b is loaded correctly');
-      equal(get(list, 'day'), 1, 'day is loaded correctly');
-      start();
-    });
-  });
-
-  stop();
-  run(function() {
-    store.queryRecord('list', {
-      whatever: "dude"
-    }).catch(function(err) {
-      ok(true, "didn't find record for nonsense");
-      start();
-    });
-  });
-});
-
-test('findAll', function() {
-  expect(7);
-
-  stop();
-  run(function() {
-    store.findAll('list').then(function(records) {
-      var firstRecord = records.objectAt(0),
-        secondRecord = records.objectAt(1),
-        thirdRecord = records.objectAt(2);
-
-      equal(get(records, 'length'), 3, "3 items were found");
-
-      equal(get(firstRecord, 'name'), "one", "First item's name is one");
-      equal(get(secondRecord, 'name'), "two", "Second item's name is two");
-      equal(get(thirdRecord, 'name'), "three", "Third item's name is three");
-
-      equal(get(firstRecord, 'day'), 1, "First item's day is 1");
-      equal(get(secondRecord, 'day'), 2, "Second item's day is 2");
-      equal(get(thirdRecord, 'day'), 3, "Third item's day is 3");
-
-      start();
-    });
-  });
-});
-
-
-test('queryMany', function() {
-  expect(11);
-  stop();
-  run(function() {
-    store.query('order', {
-      b: true
-    }).then(function(records) {
-      var firstRecord = records.objectAt(0),
-        secondRecord = records.objectAt(1),
-        thirdRecord = records.objectAt(2);
-
-      equal(get(records, 'length'), 3, "3 orders were found");
-      equal(get(firstRecord, 'name'), "one", "First order's name is one");
-      equal(get(secondRecord, 'name'), "three", "Second order's name is three");
-      equal(get(thirdRecord, 'name'), "four", "Third order's name is four");
-      var firstHours = firstRecord.get('hours'),
-        secondHours = secondRecord.get('hours'),
-        thirdHours = thirdRecord.get('hours');
-
-      equal(get(firstHours, 'length'), 2, "Order one has two hours");
-      equal(get(secondHours, 'length'), 2, "Order three has two hours");
-      equal(get(thirdHours, 'length'), 0, "Order four has no hours");
-
-      var hourOne = firstHours.objectAt(0),
-        hourTwo = firstHours.objectAt(1),
-        hourThree = secondHours.objectAt(0),
-        hourFour = secondHours.objectAt(1);
-      equal(get(hourOne, 'amount'), 4, "Hour one has amount of 4");
-      equal(get(hourTwo, 'amount'), 3, "Hour two has amount of 3");
-      equal(get(hourThree, 'amount'), 2, "Hour three has amount of 2");
-      equal(get(hourFour, 'amount'), 1, "Hour four has amount of 1");
-
-      start();
-    });
-  });
-});
+// Lifecycle methods
+// -----------------------------------------------------------------------------
 
 test('push', function() {
   expect(3);
@@ -312,7 +132,6 @@ test('updateRecords', function() {
   });
 });
 
-
 test('deleteRecord', function() {
   expect(2);
   stop();
@@ -341,81 +160,156 @@ test('deleteRecord', function() {
   });
 });
 
-test('changes in bulk', function() {
+// Find methods
+// -----------------------------------------------------------------------------
+
+test('findAll', function() {
+  expect(7);
+
   stop();
   run(function() {
+    store.findAll('list').then(function(records) {
+      var firstRecord = records.objectAt(0),
+        secondRecord = records.objectAt(1),
+        thirdRecord = records.objectAt(2);
 
-    var listToUpdate = new Ember.RSVP.Promise(function(resolve, reject) {
-      store.findRecord('list', 'l1').then(function(list) {
-        list.set('name', 'updated');
-        list.save().then(function() {
-          resolve();
-        });
-      });
-    });
+      equal(get(records, 'length'), 3, "3 items were found");
 
-    var listToCreate = new Ember.RSVP.Promise(function(resolve, reject) {
-      store.createRecord('list', {
-        name: 'Rambo'
-      }).save().then(function() {
-        resolve();
-      });
-    });
+      equal(get(firstRecord, 'name'), "one", "First item's name is one");
+      equal(get(secondRecord, 'name'), "two", "Second item's name is two");
+      equal(get(thirdRecord, 'name'), "three", "Third item's name is three");
 
-    var listToDelete = new Ember.RSVP.Promise(function(resolve, reject) {
-      store.findRecord('list', 'l2').then(function(list) {
-        list.destroyRecord().then(function() {
-          resolve();
-        });
-      });
-    });
+      equal(get(firstRecord, 'day'), 1, "First item's day is 1");
+      equal(get(secondRecord, 'day'), 2, "Second item's day is 2");
+      equal(get(thirdRecord, 'day'), 3, "Third item's day is 3");
 
-    var promises = [
-      listToUpdate,
-      listToCreate,
-      listToDelete
-    ];
-
-    Ember.RSVP.all(promises).then(function() {
-
-      promises = Ember.A();
-
-      promises.push(
-        new Ember.RSVP.Promise(function(resolve, reject) {
-          store.findRecord('list', 'l1').then(function(list) {
-            equal(get(list, 'name'), 'updated', "Record was updated successfully");
-            resolve();
-          });
-        })
-      );
-
-      promises.push(
-        new Ember.RSVP.Promise(function(resolve, reject) {
-          store.query('list', {
-            name: 'Rambo'
-          }).then(function(lists) {
-            equal(get(lists, 'length'), 1, "Record was created successfully");
-            resolve();
-          });
-        })
-      );
-
-      promises.push(
-        new Ember.RSVP.Promise(function(resolve, reject) {
-          store.findRecord('list', 'l2').catch(function(err) {
-            ok(true, "Record was deleted successfully");
-            resolve();
-          });
-        })
-      );
-
-      Ember.RSVP.all(promises).then(function() {
-        start();
-      });
+      start();
     });
   });
 });
 
+test('findRecord with id', function() {
+  expect(4);
+
+  stop();
+  run(function() {
+    store.findRecord('list', 'l1').then(function(list) {
+      equal(get(list, 'id'), 'l1', 'id is loaded correctly');
+      equal(get(list, 'name'), 'one', 'name is loaded correctly');
+      equal(get(list, 'b'), true, 'b is loaded correctly');
+      equal(get(list, 'day'), 1, 'day is loaded correctly');
+      start();
+    });
+  });
+});
+
+// Query methods
+// -----------------------------------------------------------------------------
+
+test('query', function() {
+
+  stop();
+  run(function() {
+    store.query('list', {
+      name: /one|two/
+    }).then(function(records) {
+      equal(get(records, 'length'), 2, 'found results for /one|two/');
+      start();
+    });
+  });
+
+  stop();
+  run(function() {
+    store.query('list', {
+      name: /.+/,
+      id: /l1/
+    }).then(function(records) {
+      equal(get(records, 'length'), 1, 'found results for {name: /.+/, id: /l1/}');
+      start();
+    });
+  });
+
+  stop();
+  run(function() {
+    store.query('list', {
+      name: 'one'
+    }).then(function(records) {
+      equal(get(records, 'length'), 1, 'found results for name "one"');
+      start();
+    });
+  });
+
+  stop();
+  run(function() {
+    store.query('list', {
+      b: true
+    }).then(function(records) {
+      equal(get(records, 'length'), 1, 'found results for {b: true}');
+      start();
+    });
+  });
+
+  stop();
+  run(function() {
+    store.query('list', {
+      name: 'two',
+      b: false
+    }).then(function(records) {
+      equal(get(records, 'length'), 1, 'found results for multiple criteria');
+      start();
+    });
+  });
+
+  stop();
+  run(function() {
+    store.query('list', {
+      name: 'four',
+      b: false
+    }).then(function(records) {
+      equal(get(records, 'length'), 0, 'found no results when only criteria matches');
+      start();
+    });
+  });
+
+  stop();
+  run(function() {
+    store.query('list', {
+      whatever: "dude"
+    }).then(function(records) {
+      equal(get(records, 'length'), 0, 'didn\'t find results for nonsense');
+      start();
+    });
+  });
+});
+
+test('queryRecord', function() {
+
+  stop();
+  run(function() {
+    store.queryRecord('list', {
+      name: 'one'
+    }).then(function(list) {
+      equal(get(list, 'id'), 'l1', 'id is loaded correctly');
+      equal(get(list, 'name'), 'one', 'name is loaded correctly');
+      equal(get(list, 'b'), true, 'b is loaded correctly');
+      equal(get(list, 'day'), 1, 'day is loaded correctly');
+      start();
+    });
+  });
+
+  stop();
+  run(function() {
+    store.queryRecord('list', {
+      whatever: "dude"
+    }).catch(function(err) {
+      ok(true, "didn't find record for nonsense");
+      start();
+    });
+  });
+});
+
+// Relationship loading
+//------------------------------------------------------------------------------
 
 test('load hasMany association', function() {
   expect(4);
@@ -438,7 +332,6 @@ test('load hasMany association', function() {
   });
 });
 
-
 test('load belongsTo association', function() {
   stop();
   run(function() {
@@ -450,61 +343,6 @@ test('load belongsTo association', function() {
       equal(get(list, 'id'), 'l1', "id is loaded correctly");
       equal(get(list, 'name'), 'one', "name is loaded correctly");
 
-      start();
-    });
-  });
-});
-
-
-test('saves belongsTo', function() {
-  var item,
-    listId = 'l2';
-
-  stop();
-  run(function() {
-    store.findRecord('list', listId).then(function(list) {
-      item = store.createRecord('item', {
-        name: 'three thousand'
-      });
-      item.set('list', list);
-
-      return item.save();
-    }).then(function(item) {
-      store.unloadAll('item');
-      return store.findRecord('item', item.get('id'));
-    }).then(function(item) {
-      var list = item.get('list');
-      ok(item.get('list'), 'list is present');
-      equal(list.id, listId, 'list is retrieved correctly');
-      start();
-    });
-  });
-});
-
-test('saves hasMany', function() {
-  var item, list,
-    listId = 'l2';
-
-  stop();
-
-  run(function() {
-    store.findRecord('list', listId).then(function(list) {
-      item = store.createRecord('item', {
-        name: 'three thousand'
-      });
-      list.get('items').pushObject(item);
-
-      return list.save();
-    }).then(function(list) {
-      return item.save();
-    }).then(function(item) {
-      store.unloadAll('list');
-      return store.findRecord('list', listId);
-    }).then(function(list) {
-      var items = list.get('items'),
-        item1 = items.objectAt(0);
-
-      equal(item1.get('name'), 'three thousand', 'item is saved');
       start();
     });
   });
@@ -614,6 +452,178 @@ test("loads embedded belongsTo in a 'find with id' operation", function() {
         'hour name is loaded correctly');
 
       start();
+    });
+  });
+});
+
+test('queryMany', function() {
+  expect(11);
+  stop();
+  run(function() {
+    store.query('order', {
+      b: true
+    }).then(function(records) {
+      var firstRecord = records.objectAt(0),
+        secondRecord = records.objectAt(1),
+        thirdRecord = records.objectAt(2);
+
+      equal(get(records, 'length'), 3, "3 orders were found");
+      equal(get(firstRecord, 'name'), "one", "First order's name is one");
+      equal(get(secondRecord, 'name'), "three", "Second order's name is three");
+      equal(get(thirdRecord, 'name'), "four", "Third order's name is four");
+      var firstHours = firstRecord.get('hours'),
+        secondHours = secondRecord.get('hours'),
+        thirdHours = thirdRecord.get('hours');
+
+      equal(get(firstHours, 'length'), 2, "Order one has two hours");
+      equal(get(secondHours, 'length'), 2, "Order three has two hours");
+      equal(get(thirdHours, 'length'), 0, "Order four has no hours");
+
+      var hourOne = firstHours.objectAt(0),
+        hourTwo = firstHours.objectAt(1),
+        hourThree = secondHours.objectAt(0),
+        hourFour = secondHours.objectAt(1);
+      equal(get(hourOne, 'amount'), 4, "Hour one has amount of 4");
+      equal(get(hourTwo, 'amount'), 3, "Hour two has amount of 3");
+      equal(get(hourThree, 'amount'), 2, "Hour three has amount of 2");
+      equal(get(hourFour, 'amount'), 1, "Hour four has amount of 1");
+
+      start();
+    });
+  });
+});
+
+// Relationship saving
+//------------------------------------------------------------------------------
+
+test('saves belongsTo', function() {
+  var item,
+    listId = 'l2';
+
+  stop();
+  run(function() {
+    store.findRecord('list', listId).then(function(list) {
+      item = store.createRecord('item', {
+        name: 'three thousand'
+      });
+      item.set('list', list);
+
+      return item.save();
+    }).then(function(item) {
+      store.unloadAll('item');
+      return store.findRecord('item', item.get('id'));
+    }).then(function(item) {
+      var list = item.get('list');
+      ok(item.get('list'), 'list is present');
+      equal(list.id, listId, 'list is retrieved correctly');
+      start();
+    });
+  });
+});
+
+test('saves hasMany', function() {
+  var item, list,
+    listId = 'l2';
+
+  stop();
+
+  run(function() {
+    store.findRecord('list', listId).then(function(list) {
+      item = store.createRecord('item', {
+        name: 'three thousand'
+      });
+      list.get('items').pushObject(item);
+
+      return list.save();
+    }).then(function(list) {
+      return item.save();
+    }).then(function(item) {
+      store.unloadAll('list');
+      return store.findRecord('list', listId);
+    }).then(function(list) {
+      var items = list.get('items'),
+        item1 = items.objectAt(0);
+
+      equal(item1.get('name'), 'three thousand', 'item is saved');
+      start();
+    });
+  });
+});
+
+// Bulk operations
+//------------------------------------------------------------------------------
+
+test('changes in bulk', function() {
+  stop();
+  run(function() {
+
+    var listToUpdate = new Ember.RSVP.Promise(function(resolve, reject) {
+      store.findRecord('list', 'l1').then(function(list) {
+        list.set('name', 'updated');
+        list.save().then(function() {
+          resolve();
+        });
+      });
+    });
+
+    var listToCreate = new Ember.RSVP.Promise(function(resolve, reject) {
+      store.createRecord('list', {
+        name: 'Rambo'
+      }).save().then(function() {
+        resolve();
+      });
+    });
+
+    var listToDelete = new Ember.RSVP.Promise(function(resolve, reject) {
+      store.findRecord('list', 'l2').then(function(list) {
+        list.destroyRecord().then(function() {
+          resolve();
+        });
+      });
+    });
+
+    var promises = [
+      listToUpdate,
+      listToCreate,
+      listToDelete
+    ];
+
+    Ember.RSVP.all(promises).then(function() {
+
+      promises = Ember.A();
+
+      promises.push(
+        new Ember.RSVP.Promise(function(resolve, reject) {
+          store.findRecord('list', 'l1').then(function(list) {
+            equal(get(list, 'name'), 'updated', "Record was updated successfully");
+            resolve();
+          });
+        })
+      );
+
+      promises.push(
+        new Ember.RSVP.Promise(function(resolve, reject) {
+          store.query('list', {
+            name: 'Rambo'
+          }).then(function(lists) {
+            equal(get(lists, 'length'), 1, "Record was created successfully");
+            resolve();
+          });
+        })
+      );
+
+      promises.push(
+        new Ember.RSVP.Promise(function(resolve, reject) {
+          store.findRecord('list', 'l2').catch(function(err) {
+            ok(true, "Record was deleted successfully");
+            resolve();
+          });
+        })
+      );
+
+      Ember.RSVP.all(promises).then(function() {
+        start();
+      });
     });
   });
 });
