@@ -95,7 +95,7 @@ test('createRecord', function() {
   });
 });
 
-test('updateRecords', function() {
+test('updateRecord', function() {
   expect(3);
   stop();
 
@@ -188,7 +188,7 @@ test('findAll', function() {
   });
 });
 
-test('findRecord with id', function() {
+test('findRecord', function() {
   expect(4);
 
   stop();
@@ -311,7 +311,7 @@ test('queryRecord', function() {
 // Relationship loading
 //------------------------------------------------------------------------------
 
-test('load hasMany association', function() {
+test('load hasMany relationships when finding a single record', function() {
   expect(4);
   stop();
 
@@ -332,7 +332,7 @@ test('load hasMany association', function() {
   });
 });
 
-test('load belongsTo association', function() {
+test('load belongsTo relationships when finding a single record', function() {
   stop();
   run(function() {
     store.findRecord('item', 'i1').then(function(item) {
@@ -348,7 +348,7 @@ test('load belongsTo association', function() {
   });
 });
 
-test("loads embedded hasMany in a 'find with id' operation", function() {
+test("load embedded hasMany relationships when finding a single record", function() {
   expect(5);
 
   stop();
@@ -375,7 +375,7 @@ test("loads embedded hasMany in a 'find with id' operation", function() {
   });
 });
 
-test("loads embedded hasMany in a 'find all' operation", function() {
+test("load embedded hasMany relationships when finding multiple records", function() {
   expect(6);
 
   stop();
@@ -405,7 +405,7 @@ test("loads embedded hasMany in a 'find all' operation", function() {
   });
 });
 
-test("loads embedded hasMany in a 'find many' operation", function() {
+test("load embedded hasMany relationships when querying multiple records", function() {
   expect(6);
 
   stop();
@@ -437,7 +437,7 @@ test("loads embedded hasMany in a 'find many' operation", function() {
   });
 });
 
-test("loads embedded belongsTo in a 'find with id' operation", function() {
+test("load embedded belongsTo relationships when finding a single record", function() {
   expect(2);
 
   stop();
@@ -456,7 +456,7 @@ test("loads embedded belongsTo in a 'find with id' operation", function() {
   });
 });
 
-test('queryMany', function() {
+test('load hasMany relationships when querying multiple records', function() {
   expect(11);
   stop();
   run(function() {
@@ -496,7 +496,7 @@ test('queryMany', function() {
 // Relationship saving
 //------------------------------------------------------------------------------
 
-test('saves belongsTo', function() {
+test('save belongsTo relationships', function() {
   var item,
     listId = 'l2';
 
@@ -521,7 +521,7 @@ test('saves belongsTo', function() {
   });
 });
 
-test('saves hasMany', function() {
+test('save hasMany relationships', function() {
   var item, list,
     listId = 'l2';
 
@@ -553,7 +553,7 @@ test('saves hasMany', function() {
 // Bulk operations
 //------------------------------------------------------------------------------
 
-test('changes in bulk', function() {
+test('perform multiple changes in bulk', function() {
   stop();
   run(function() {
 
