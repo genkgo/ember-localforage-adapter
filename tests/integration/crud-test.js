@@ -323,10 +323,7 @@ test("load belongsTo relationships when finding a single record", function() {
   stop();
   run(function() {
     store.findRecord('item', 'i1').then(function(item) {
-      return new Ember.RSVP.Promise(function(resolve) {
-        resolve(get(item, 'list'));
-      });
-    }).then(function(list) {
+      var list = item.get('list');
       equal(get(list, 'id'), 'l1', "id is loaded correctly");
       equal(get(list, 'name'), 'one', "name is loaded correctly");
       start();
