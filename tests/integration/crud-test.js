@@ -14,7 +14,7 @@ var run = Ember.run;
 var get = Ember.get;
 var set = Ember.set;
 
-module('CRUD', {
+module("CRUD", {
   setup: function() {
     stop();
     run(function() {
@@ -39,7 +39,7 @@ module('CRUD', {
 // Lifecycle methods
 // -----------------------------------------------------------------------------
 
-test('push', function() {
+test("push", function() {
   expect(3);
   stop();
 
@@ -53,13 +53,10 @@ test('push', function() {
     });
 
     list.save().then(function(record) {
-
-
       store.query('list', {
         name: 'Rambo'
       }).then(function(records) {
         var record = records.objectAt(0);
-
         equal(get(records, 'length'), 1, "Only Rambo was found");
         equal(get(record, 'name'), "Rambo", "Correct name");
         equal(get(record, 'id'), list.id, "Correct, original id");
@@ -69,7 +66,7 @@ test('push', function() {
   });
 });
 
-test('createRecord', function() {
+test("createRecord", function() {
   expect(3);
   stop();
 
@@ -79,13 +76,10 @@ test('createRecord', function() {
     });
 
     list.save().then(function(record) {
-
-
       store.query('list', {
         name: 'Rambo'
       }).then(function(records) {
         var record = records.objectAt(0);
-
         equal(get(records, 'length'), 1, "Only Rambo was found");
         equal(get(record, 'name'), "Rambo", "Correct name");
         equal(get(record, 'id'), list.id, "Correct, original id");
@@ -95,7 +89,7 @@ test('createRecord', function() {
   });
 });
 
-test('updateRecord', function() {
+test("updateRecord", function() {
   expect(3);
   stop();
 
@@ -119,11 +113,9 @@ test('updateRecord', function() {
         name: 'Macgyver'
       }).then(function(records) {
         var record = records.objectAt(0);
-
         equal(get(records, 'length'), 1, "Only one record was found");
         equal(get(record, 'name'), "Macgyver", "Updated name shows up");
         equal(get(record, 'id'), list.id, "Correct, original id");
-
         start();
       });
     };
@@ -132,7 +124,7 @@ test('updateRecord', function() {
   });
 });
 
-test('deleteRecord', function() {
+test("deleteRecord", function() {
   expect(2);
   stop();
 
@@ -150,9 +142,7 @@ test('deleteRecord', function() {
       name: 'one'
     }).then(function(lists) {
       var list = lists.objectAt(0);
-
       equal(get(list, "id"), "l1", "Item exists");
-
       list.deleteRecord();
       list.on("didDelete", AssertListIsDeleted);
       list.save();
@@ -163,7 +153,7 @@ test('deleteRecord', function() {
 // Find methods
 // -----------------------------------------------------------------------------
 
-test('findAll', function() {
+test("findAll", function() {
   expect(7);
 
   stop();
@@ -188,16 +178,16 @@ test('findAll', function() {
   });
 });
 
-test('findRecord', function() {
+test("findRecord", function() {
   expect(4);
 
   stop();
   run(function() {
     store.findRecord('list', 'l1').then(function(list) {
-      equal(get(list, 'id'), 'l1', 'id is loaded correctly');
-      equal(get(list, 'name'), 'one', 'name is loaded correctly');
-      equal(get(list, 'b'), true, 'b is loaded correctly');
-      equal(get(list, 'day'), 1, 'day is loaded correctly');
+      equal(get(list, 'id'), 'l1', "id is loaded correctly");
+      equal(get(list, 'name'), 'one', "name is loaded correctly");
+      equal(get(list, 'b'), true, "b is loaded correctly");
+      equal(get(list, 'day'), 1, "day is loaded correctly");
       start();
     });
   });
@@ -206,14 +196,14 @@ test('findRecord', function() {
 // Query methods
 // -----------------------------------------------------------------------------
 
-test('query', function() {
+test("query", function() {
 
   stop();
   run(function() {
     store.query('list', {
       name: /one|two/
     }).then(function(records) {
-      equal(get(records, 'length'), 2, 'found results for /one|two/');
+      equal(get(records, 'length'), 2, "found results for /one|two/");
       start();
     });
   });
@@ -224,7 +214,7 @@ test('query', function() {
       name: /.+/,
       id: /l1/
     }).then(function(records) {
-      equal(get(records, 'length'), 1, 'found results for {name: /.+/, id: /l1/}');
+      equal(get(records, 'length'), 1, "found results for { name: /.+/, id: /l1/ }");
       start();
     });
   });
@@ -234,7 +224,7 @@ test('query', function() {
     store.query('list', {
       name: 'one'
     }).then(function(records) {
-      equal(get(records, 'length'), 1, 'found results for name "one"');
+      equal(get(records, 'length'), 1, "found results for name 'one'");
       start();
     });
   });
@@ -244,7 +234,7 @@ test('query', function() {
     store.query('list', {
       b: true
     }).then(function(records) {
-      equal(get(records, 'length'), 1, 'found results for {b: true}');
+      equal(get(records, 'length'), 1, "found results for { b: true }");
       start();
     });
   });
@@ -255,7 +245,7 @@ test('query', function() {
       name: 'two',
       b: false
     }).then(function(records) {
-      equal(get(records, 'length'), 1, 'found results for multiple criteria');
+      equal(get(records, 'length'), 1, "found results for multiple criteria");
       start();
     });
   });
@@ -266,7 +256,7 @@ test('query', function() {
       name: 'four',
       b: false
     }).then(function(records) {
-      equal(get(records, 'length'), 0, 'found no results when only criteria matches');
+      equal(get(records, 'length'), 0, "found no results when only criteria matches");
       start();
     });
   });
@@ -276,23 +266,23 @@ test('query', function() {
     store.query('list', {
       whatever: "dude"
     }).then(function(records) {
-      equal(get(records, 'length'), 0, 'didn\'t find results for nonsense');
+      equal(get(records, 'length'), 0, "didn't find results for nonsense");
       start();
     });
   });
 });
 
-test('queryRecord', function() {
+test("queryRecord", function() {
 
   stop();
   run(function() {
     store.queryRecord('list', {
       name: 'one'
     }).then(function(list) {
-      equal(get(list, 'id'), 'l1', 'id is loaded correctly');
-      equal(get(list, 'name'), 'one', 'name is loaded correctly');
-      equal(get(list, 'b'), true, 'b is loaded correctly');
-      equal(get(list, 'day'), 1, 'day is loaded correctly');
+      equal(get(list, 'id'), 'l1', "id is loaded correctly");
+      equal(get(list, 'name'), 'one', "name is loaded correctly");
+      equal(get(list, 'b'), true, "b is loaded correctly");
+      equal(get(list, 'day'), 1, "day is loaded correctly");
       start();
     });
   });
@@ -311,28 +301,25 @@ test('queryRecord', function() {
 // Relationship loading
 //------------------------------------------------------------------------------
 
-test('load hasMany relationships when finding a single record', function() {
+test("load hasMany relationships when finding a single record", function() {
   expect(4);
   stop();
 
   run(function() {
     store.findRecord('list', 'l1').then(function(list) {
       var items = list.get('items');
-
       var item1 = items.get('firstObject'),
         item2 = items.get('lastObject');
-
-      equal(get(item1, 'id'), 'i1', 'first item id is loaded correctly');
-      equal(get(item1, 'name'), 'one', 'first item name is loaded correctly');
-      equal(get(item2, 'id'), 'i2', 'first item id is loaded correctly');
-      equal(get(item2, 'name'), 'two', 'first item name is loaded correctly');
-
+      equal(get(item1, 'id'), 'i1', "first item id is loaded correctly");
+      equal(get(item1, 'name'), 'one', "first item name is loaded correctly");
+      equal(get(item2, 'id'), 'i2', "first item id is loaded correctly");
+      equal(get(item2, 'name'), 'two', "first item name is loaded correctly");
       start();
     });
   });
 });
 
-test('load belongsTo relationships when finding a single record', function() {
+test("load belongsTo relationships when finding a single record", function() {
   stop();
   run(function() {
     store.findRecord('item', 'i1').then(function(item) {
@@ -342,7 +329,6 @@ test('load belongsTo relationships when finding a single record', function() {
     }).then(function(list) {
       equal(get(list, 'id'), 'l1', "id is loaded correctly");
       equal(get(list, 'name'), 'one', "name is loaded correctly");
-
       start();
     });
   });
@@ -356,19 +342,18 @@ test("load embedded hasMany relationships when finding a single record", functio
   run(function() {
     store.findRecord('customer', '1').then(function(customer) {
       var addresses = customer.get('addresses');
-
       equal(addresses.length, 2);
+
       var address1 = addresses.get('firstObject'),
         address2 = addresses.get('lastObject');
-
       equal(get(address1, 'id'), '1',
-        'first address id is loaded correctly');
+        "first address id is loaded correctly");
       equal(get(address1, 'addressNumber'), '12345',
-        'first address number is loaded correctly');
+        "first address number is loaded correctly");
       equal(get(address2, 'id'), '2',
-        'first address id is loaded correctly');
+        "first address id is loaded correctly");
       equal(get(address2, 'addressNumber'), '54321',
-        'first address number is loaded correctly');
+        "first address number is loaded correctly");
 
       start();
     });
@@ -386,19 +371,18 @@ test("load embedded hasMany relationships when finding multiple records", functi
 
       var customer = customers.objectAt(0);
       var addresses = customer.get('addresses');
-
       equal(addresses.length, 2);
+
       var address1 = addresses.get('firstObject'),
         address2 = addresses.get('lastObject');
-
       equal(get(address1, 'id'), '1',
-        'first address id is loaded correctly');
+        "first address id is loaded correctly");
       equal(get(address1, 'addressNumber'), '12345',
-        'first address number is loaded correctly');
+        "first address number is loaded correctly");
       equal(get(address2, 'id'), '2',
-        'first address id is loaded correctly');
+        "first address id is loaded correctly");
       equal(get(address2, 'addressNumber'), '54321',
-        'first address number is loaded correctly');
+        "first address number is loaded correctly");
 
       start();
     });
@@ -418,19 +402,18 @@ test("load embedded hasMany relationships when querying multiple records", funct
 
       var customer = customers.objectAt(0);
       var addresses = customer.get('addresses');
-
       equal(addresses.length, 2);
+
       var address1 = addresses.get('firstObject'),
         address2 = addresses.get('lastObject');
-
       equal(get(address1, 'id'), '1',
-        'first address id is loaded correctly');
+        "first address id is loaded correctly");
       equal(get(address1, 'addressNumber'), '12345',
-        'first address number is loaded correctly');
+        "first address number is loaded correctly");
       equal(get(address2, 'id'), '2',
-        'first address id is loaded correctly');
+        "first address id is loaded correctly");
       equal(get(address2, 'addressNumber'), '54321',
-        'first address number is loaded correctly');
+        "first address number is loaded correctly");
 
       start();
     });
@@ -447,16 +430,16 @@ test("load embedded belongsTo relationships when finding a single record", funct
       var hour = customer.get('hour');
 
       equal(get(hour, 'id'), 'h5',
-        'hour id is loaded correctly');
+        "hour id is loaded correctly");
       equal(get(hour, 'name'), 'five',
-        'hour name is loaded correctly');
+        "hour name is loaded correctly");
 
       start();
     });
   });
 });
 
-test('load hasMany relationships when querying multiple records', function() {
+test("load hasMany relationships when querying multiple records", function() {
   expect(11);
   stop();
   run(function() {
@@ -466,15 +449,14 @@ test('load hasMany relationships when querying multiple records', function() {
       var firstRecord = records.objectAt(0),
         secondRecord = records.objectAt(1),
         thirdRecord = records.objectAt(2);
-
       equal(get(records, 'length'), 3, "3 orders were found");
       equal(get(firstRecord, 'name'), "one", "First order's name is one");
       equal(get(secondRecord, 'name'), "three", "Second order's name is three");
       equal(get(thirdRecord, 'name'), "four", "Third order's name is four");
+
       var firstHours = firstRecord.get('hours'),
         secondHours = secondRecord.get('hours'),
         thirdHours = thirdRecord.get('hours');
-
       equal(get(firstHours, 'length'), 2, "Order one has two hours");
       equal(get(secondHours, 'length'), 2, "Order three has two hours");
       equal(get(thirdHours, 'length'), 0, "Order four has no hours");
@@ -496,7 +478,7 @@ test('load hasMany relationships when querying multiple records', function() {
 // Relationship saving
 //------------------------------------------------------------------------------
 
-test('save belongsTo relationships', function() {
+test("save belongsTo relationships", function() {
   var item,
     listId = 'l2';
 
@@ -514,14 +496,14 @@ test('save belongsTo relationships', function() {
       return store.findRecord('item', item.get('id'));
     }).then(function(item) {
       var list = item.get('list');
-      ok(item.get('list'), 'list is present');
-      equal(list.id, listId, 'list is retrieved correctly');
+      ok(item.get('list'), "list is present");
+      equal(list.id, listId, "list is retrieved correctly");
       start();
     });
   });
 });
 
-test('save hasMany relationships', function() {
+test("save hasMany relationships", function() {
   var item, list,
     listId = 'l2';
 
@@ -533,7 +515,6 @@ test('save hasMany relationships', function() {
         name: 'three thousand'
       });
       list.get('items').pushObject(item);
-
       return list.save();
     }).then(function(list) {
       return item.save();
@@ -543,8 +524,7 @@ test('save hasMany relationships', function() {
     }).then(function(list) {
       var items = list.get('items'),
         item1 = items.objectAt(0);
-
-      equal(item1.get('name'), 'three thousand', 'item is saved');
+      equal(item1.get('name'), 'three thousand', "item is saved");
       start();
     });
   });
@@ -553,7 +533,7 @@ test('save hasMany relationships', function() {
 // Bulk operations
 //------------------------------------------------------------------------------
 
-test('perform multiple changes in bulk', function() {
+test("perform multiple changes in bulk", function() {
   stop();
   run(function() {
 
