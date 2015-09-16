@@ -159,9 +159,9 @@ test("findAll", function() {
   stop();
   run(function() {
     store.findAll('list').then(function(records) {
-      var firstRecord = records.objectAt(0),
-        secondRecord = records.objectAt(1),
-        thirdRecord = records.objectAt(2);
+      var firstRecord = records.objectAt(0);
+      var secondRecord = records.objectAt(1);
+      var thirdRecord = records.objectAt(2);
 
       equal(get(records, 'length'), 3, "3 items were found");
 
@@ -308,8 +308,8 @@ test("load hasMany relationships when finding a single record", function() {
   run(function() {
     store.findRecord('list', 'l1').then(function(list) {
       var items = list.get('items');
-      var item1 = items.get('firstObject'),
-        item2 = items.get('lastObject');
+      var item1 = items.get('firstObject');
+      var item2 = items.get('lastObject');
       equal(get(item1, 'id'), 'i1', "first item id is loaded correctly");
       equal(get(item1, 'name'), 'one', "first item name is loaded correctly");
       equal(get(item2, 'id'), 'i2', "first item id is loaded correctly");
@@ -344,8 +344,8 @@ test("load embedded hasMany relationships when finding a single record", functio
       var addresses = customer.get('addresses');
       equal(addresses.length, 2);
 
-      var address1 = addresses.get('firstObject'),
-        address2 = addresses.get('lastObject');
+      var address1 = addresses.get('firstObject');
+      var address2 = addresses.get('lastObject');
       equal(get(address1, 'id'), '1',
         "first address id is loaded correctly");
       equal(get(address1, 'addressNumber'), '12345',
@@ -373,8 +373,8 @@ test("load embedded hasMany relationships when finding multiple records", functi
       var addresses = customer.get('addresses');
       equal(addresses.length, 2);
 
-      var address1 = addresses.get('firstObject'),
-        address2 = addresses.get('lastObject');
+      var address1 = addresses.get('firstObject');
+      var address2 = addresses.get('lastObject');
       equal(get(address1, 'id'), '1',
         "first address id is loaded correctly");
       equal(get(address1, 'addressNumber'), '12345',
@@ -404,8 +404,8 @@ test("load embedded hasMany relationships when querying multiple records", funct
       var addresses = customer.get('addresses');
       equal(addresses.length, 2);
 
-      var address1 = addresses.get('firstObject'),
-        address2 = addresses.get('lastObject');
+      var address1 = addresses.get('firstObject');
+      var address2 = addresses.get('lastObject');
       equal(get(address1, 'id'), '1',
         "first address id is loaded correctly");
       equal(get(address1, 'addressNumber'), '12345',
@@ -428,7 +428,6 @@ test("load embedded belongsTo relationships when finding a single record", funct
   run(function() {
     store.findRecord('customer', '1').then(function(customer) {
       var hour = customer.get('hour');
-
       equal(get(hour, 'id'), 'h5',
         "hour id is loaded correctly");
       equal(get(hour, 'name'), 'five',
@@ -446,25 +445,25 @@ test("load hasMany relationships when querying multiple records", function() {
     store.query('order', {
       b: true
     }).then(function(records) {
-      var firstRecord = records.objectAt(0),
-        secondRecord = records.objectAt(1),
-        thirdRecord = records.objectAt(2);
+      var firstRecord = records.objectAt(0);
+      var secondRecord = records.objectAt(1);
+      var thirdRecord = records.objectAt(2);
       equal(get(records, 'length'), 3, "3 orders were found");
       equal(get(firstRecord, 'name'), "one", "First order's name is one");
       equal(get(secondRecord, 'name'), "three", "Second order's name is three");
       equal(get(thirdRecord, 'name'), "four", "Third order's name is four");
 
-      var firstHours = firstRecord.get('hours'),
-        secondHours = secondRecord.get('hours'),
-        thirdHours = thirdRecord.get('hours');
+      var firstHours = firstRecord.get('hours');
+      var secondHours = secondRecord.get('hours');
+      var thirdHours = thirdRecord.get('hours');
       equal(get(firstHours, 'length'), 2, "Order one has two hours");
       equal(get(secondHours, 'length'), 2, "Order three has two hours");
       equal(get(thirdHours, 'length'), 0, "Order four has no hours");
 
-      var hourOne = firstHours.objectAt(0),
-        hourTwo = firstHours.objectAt(1),
-        hourThree = secondHours.objectAt(0),
-        hourFour = secondHours.objectAt(1);
+      var hourOne = firstHours.objectAt(0);
+      var hourTwo = firstHours.objectAt(1);
+      var hourThree = secondHours.objectAt(0);
+      var hourFour = secondHours.objectAt(1);
       equal(get(hourOne, 'amount'), 4, "Hour one has amount of 4");
       equal(get(hourTwo, 'amount'), 3, "Hour two has amount of 3");
       equal(get(hourThree, 'amount'), 2, "Hour three has amount of 2");
@@ -489,7 +488,6 @@ test("save belongsTo relationships", function() {
         name: 'three thousand'
       });
       item.set('list', list);
-
       return item.save();
     }).then(function(item) {
       store.unloadAll('item');
@@ -522,8 +520,8 @@ test("save hasMany relationships", function() {
       store.unloadAll('list');
       return store.findRecord('list', listId);
     }).then(function(list) {
-      var items = list.get('items'),
-        item1 = items.objectAt(0);
+      var items = list.get('items');
+      var item1 = items.objectAt(0);
       equal(item1.get('name'), 'three thousand', "item is saved");
       start();
     });
