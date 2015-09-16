@@ -475,13 +475,12 @@ test("load hasMany relationships when querying multiple records", function() {
 //------------------------------------------------------------------------------
 
 test("save belongsTo relationships", function() {
-  var item,
-    listId = 'l2';
+  var listId = 'l2';
 
   stop();
   run(function() {
     store.findRecord('list', listId).then(function(list) {
-      item = store.createRecord('item', {
+      var item = store.createRecord('item', {
         name: 'three thousand'
       });
       item.set('list', list);
@@ -499,21 +498,19 @@ test("save belongsTo relationships", function() {
 });
 
 test("save hasMany relationships", function() {
-  var item, list,
-    listId = 'l2';
+  var listId = 'l2';
 
   stop();
-
   run(function() {
     store.findRecord('list', listId).then(function(list) {
-      item = store.createRecord('item', {
+      var item = store.createRecord('item', {
         name: 'three thousand'
       });
       list.get('items').pushObject(item);
-      return list.save();
-    }).then(function(list) {
-      return item.save();
-    }).then(function(item) {
+      return item.save().then(function() {
+        return list.save();
+      });
+    }).then(function() {
       store.unloadAll('list');
       return store.findRecord('list', listId);
     }).then(function(list) {
