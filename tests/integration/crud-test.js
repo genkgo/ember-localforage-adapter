@@ -307,14 +307,15 @@ test("load hasMany relationships when finding a single record", function() {
 
   run(function() {
     store.findRecord('list', 'l1').then(function(list) {
-      var items = list.get('items');
-      var item1 = items.get('firstObject');
-      var item2 = items.get('lastObject');
-      equal(get(item1, 'id'), 'i1', "first item id is loaded correctly");
-      equal(get(item1, 'name'), 'one', "first item name is loaded correctly");
-      equal(get(item2, 'id'), 'i2', "first item id is loaded correctly");
-      equal(get(item2, 'name'), 'two', "first item name is loaded correctly");
-      start();
+      list.get('items').then(function(items) {
+        var item1 = items.get('firstObject');
+        var item2 = items.get('lastObject');
+        equal(get(item1, 'id'), 'i1', "first item id is loaded correctly");
+        equal(get(item1, 'name'), 'one', "first item name is loaded correctly");
+        equal(get(item2, 'id'), 'i2', "first item id is loaded correctly");
+        equal(get(item2, 'name'), 'two', "first item name is loaded correctly");
+        start();
+      });
     });
   });
 });
@@ -323,10 +324,11 @@ test("load belongsTo relationships when finding a single record", function() {
   stop();
   run(function() {
     store.findRecord('item', 'i1').then(function(item) {
-      var list = item.get('list');
-      equal(get(list, 'id'), 'l1', "id is loaded correctly");
-      equal(get(list, 'name'), 'one', "name is loaded correctly");
-      start();
+      item.get('list').then(function(list) {
+        equal(get(list, 'id'), 'l1', "id is loaded correctly");
+        equal(get(list, 'name'), 'one', "name is loaded correctly");
+        start();
+      });
     });
   });
 });
@@ -450,23 +452,30 @@ test("load hasMany relationships when querying multiple records", function() {
       equal(get(secondRecord, 'name'), "three", "Second order's name is three");
       equal(get(thirdRecord, 'name'), "four", "Third order's name is four");
 
-      var firstHours = firstRecord.get('hours');
-      var secondHours = secondRecord.get('hours');
-      var thirdHours = thirdRecord.get('hours');
-      equal(get(firstHours, 'length'), 2, "Order one has two hours");
-      equal(get(secondHours, 'length'), 2, "Order three has two hours");
-      equal(get(thirdHours, 'length'), 0, "Order four has no hours");
+      
+      Ember.RSVP.all([
+        firstRecord.get('hours'),
+        secondRecord.get('hours'),
+        thirdRecord.get('hours')
+      ]).then(function(hours) {
+        var firstHours = hours[0];
+        var secondHours = hours[1];
+        var thirdHours = hours[2];
+        equal(get(firstHours, 'length'), 2, "Order one has two hours");
+        equal(get(secondHours, 'length'), 2, "Order three has two hours");
+        equal(get(thirdHours, 'length'), 0, "Order four has no hours");
 
-      var hourOne = firstHours.objectAt(0);
-      var hourTwo = firstHours.objectAt(1);
-      var hourThree = secondHours.objectAt(0);
-      var hourFour = secondHours.objectAt(1);
-      equal(get(hourOne, 'amount'), 4, "Hour one has amount of 4");
-      equal(get(hourTwo, 'amount'), 3, "Hour two has amount of 3");
-      equal(get(hourThree, 'amount'), 2, "Hour three has amount of 2");
-      equal(get(hourFour, 'amount'), 1, "Hour four has amount of 1");
+        var hourOne = firstHours.objectAt(0);
+        var hourTwo = firstHours.objectAt(1);
+        var hourThree = secondHours.objectAt(0);
+        var hourFour = secondHours.objectAt(1);
+        equal(get(hourOne, 'amount'), 4, "Hour one has amount of 4");
+        equal(get(hourTwo, 'amount'), 3, "Hour two has amount of 3");
+        equal(get(hourThree, 'amount'), 2, "Hour three has amount of 2");
+        equal(get(hourFour, 'amount'), 1, "Hour four has amount of 1");
 
-      start();
+        start();
+      });
     });
   });
 });
@@ -489,10 +498,11 @@ test("save belongsTo relationships", function() {
       store.unloadAll('item');
       return store.findRecord('item', item.get('id'));
     }).then(function(item) {
-      var list = item.get('list');
-      ok(item.get('list'), "list is present");
-      equal(list.id, listId, "list is retrieved correctly");
-      start();
+      item.get('list').then(function(list) {
+        ok(item.get('list'), "list is present");
+        equal(list.id, listId, "list is retrieved correctly");
+        start();
+      });
     });
   });
 });
@@ -506,18 +516,21 @@ test("save hasMany relationships", function() {
       var item = store.createRecord('item', {
         name: 'three thousand'
       });
-      list.get('items').pushObject(item);
-      return item.save().then(function() {
-        return list.save();
+      return list.get('items').then(function(items) {
+        items.pushObject(item);
+        return item.save().then(function() {
+          return list.save();
+        });
       });
     }).then(function() {
       store.unloadAll('list');
       return store.findRecord('list', listId);
     }).then(function(list) {
-      var items = list.get('items');
-      var item1 = items.objectAt(0);
-      equal(item1.get('name'), 'three thousand', "item is saved");
-      start();
+      list.get('items').then(function(items) {
+        var item1 = items.objectAt(0);
+        equal(item1.get('name'), 'three thousand', "item is saved");
+        start();
+      });
     });
   });
 });
