@@ -53,15 +53,15 @@ test("push", function() {
     });
 
     list.save().then(function(record) {
-      store.query('list', {
+      return store.query('list', {
         name: 'Rambo'
-      }).then(function(records) {
-        var record = records.objectAt(0);
-        equal(get(records, 'length'), 1, "Only Rambo was found");
-        equal(get(record, 'name'), "Rambo", "Correct name");
-        equal(get(record, 'id'), list.id, "Correct, original id");
-        start();
       });
+    }).then(function(records) {
+      var record = records.objectAt(0);
+      equal(get(records, 'length'), 1, "Only Rambo was found");
+      equal(get(record, 'name'), "Rambo", "Correct name");
+      equal(get(record, 'id'), list.id, "Correct, original id");
+      start();
     });
   });
 });
@@ -76,15 +76,15 @@ test("createRecord", function() {
     });
 
     list.save().then(function(record) {
-      store.query('list', {
+      return store.query('list', {
         name: 'Rambo'
-      }).then(function(records) {
-        var record = records.objectAt(0);
-        equal(get(records, 'length'), 1, "Only Rambo was found");
-        equal(get(record, 'name'), "Rambo", "Correct name");
-        equal(get(record, 'id'), list.id, "Correct, original id");
-        start();
       });
+    }).then(function(records) {
+      var record = records.objectAt(0);
+      equal(get(records, 'length'), 1, "Only Rambo was found");
+      equal(get(record, 'name'), "Rambo", "Correct name");
+      equal(get(record, 'id'), list.id, "Correct, original id");
+      start();
     });
   });
 });
