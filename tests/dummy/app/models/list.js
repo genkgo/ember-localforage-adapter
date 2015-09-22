@@ -6,6 +6,6 @@ var hasMany = DS.hasMany;
 export default DS.Model.extend({
   name: attr('string'),
   b: attr('boolean'),
-  items: hasMany('item', { async: false }),
+  items: hasMany('item'),
   day: attr('day')
 });

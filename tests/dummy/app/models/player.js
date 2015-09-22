@@ -4,6 +4,6 @@ export default DS.Model.extend({
   name: DS.attr('string'),
   balance: DS.attr('number'),
 
-  ledger: DS.belongsTo('ledger',{ async: true }),
-  purchases: DS.hasMany('purchase', {async: true})
+  ledger: DS.belongsTo('ledger'),
+  purchases: DS.hasMany('purchase')
 });

@@ -38,9 +38,13 @@ test('find customer -> hour -> order', function () {
 
   visit('/purchase/1');
   andThen(function () {
-    equal(find('div.name').text(), 'credits');
-    equal(find('div.amount').text(), '10');
-    equal(find('div.player').text(), 'one');
-    equal(find('div.ledger').text(), 'payable');
+    stop();
+    run.later(function() {
+      equal(find('div.name').text(), 'credits');
+      equal(find('div.amount').text(), '10');
+      equal(find('div.player').text(), 'one');
+      equal(find('div.ledger').text(), 'payable');
+      start();
+    }, 300);
   });
 });
