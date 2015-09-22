@@ -34,7 +34,7 @@ For a more thorough introduction how to use this adapter, please read [Models an
 
 ### Upgrade - BC Breaks
 
-Version 2.1.0 of this adapter contains backward incompatible changes in order to be compliant with Ember Data 2.0.0. There is [an upgrade guide](UPGRADE.md) available.
+Version 2.1.0 (not released yet) of this adapter contains backward incompatible changes in order to be compliant with Ember Data 2.0.0. There is [an upgrade guide](UPGRADE.md) available.
 
 ### Localforage Namespace
 
