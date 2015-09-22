@@ -32,6 +32,10 @@ export default LFAdapter;
 
 For a more thorough introduction how to use this adapter, please read [Models and application data](https://developer.mozilla.org/en-US/Apps/Build/Modern_web_app_architecture/Models_and_application_data) on the MDN website of Mozilla.
 
+### Upgrade - BC Breaks
+
+Version 2.1.0 of this adapter contains backward incompatible changes in order to be compliant with Ember Data 2.0.0. There is [an upgrade guide](UPGRADE.md) available.
+
 ### Localforage Namespace
 
 All of your application data lives on a single `localforage` key, it defaults to `DS.LFAdapter` but if you supply a `namespace` option it will store it there:
