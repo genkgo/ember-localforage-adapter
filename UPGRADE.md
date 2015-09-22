@@ -1,15 +1,25 @@
 Upgrade Guides
 ==============
 
-Ember Data 2.0 - Ember Data 2.1
+Ember Data 2.0
 --------------------------------
 
-If the relationship was...|And the associated records were...|The relationship now must be...|What about my association getters?
+Changes required by migration from ED < 2.0 to ED >= 2.0:
+
+If the relationship was...|The relationship now must be...
+---|---
+`{async: false}`|no change
+`{async: true}`|no change *or specification could be removed*
+*not specified*|`{async: false}` **explicitely**
+
+Then the following changes are required by migration from ELA 2.0 to ELA 2.1:
+
+If the relationship was...|And the associated records were...|The relationship now must be...|What about the association getters?
 ---|---|---|---
-`{ async: false}` *or not specified*|embedded|`{ async: false }` **explicitely**|No change
-`{ async: false}` *or not specified*|not embedded|`{ async: true }` *or not specified*|Use **promise** instead of a direct read (see example below)
-`{ async: true}`|not embedded|No change|no change
-`{ async: true}`|embedded|*irrelevant*|*irrelevant*
+`{async: false}`|embedded|no change|no change
+`{async: false}`|not embedded|`{async: true}`<br/>*or not specified*|Use **promise** instead of<br/> direct read<br/>(see example below)
+`{async: true}`<br/>*or not specified*|not embedded|no change|no change
+`{async: true}`<br/>*or not specified*|embedded|*irrelevant*|*irrelevant*
 
 Migration example for affected getters:
 
