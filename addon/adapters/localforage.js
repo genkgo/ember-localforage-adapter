@@ -332,13 +332,14 @@ export default DS.Adapter.extend(Ember.Evented, {
          * main payload. We find each of these records and add them to _embedded.
          */
         var embeddedAlways = this.isEmbeddedAlways(store, type.modelName, relationProp.key);
+        var relationAdapter = store.adapterFor(relationModel.modelName);
 
         // For embeddedAlways-style data, we assume the data to be present already, so no further loading is needed.
         if (relationEmbeddedId && !embeddedAlways) {
           if (relationType === 'belongsTo' || relationType === 'hasOne') {
-            promise = this.findRecord(store, relationModel, relationEmbeddedId, opts);
+            promise = relationAdapter.findRecord(store, relationModel, relationEmbeddedId, opts);
           } else if (relationType === 'hasMany') {
-            promise = this.findMany(store, relationModel, relationEmbeddedId, opts);
+            promise = relationAdapter.findMany(store, relationModel, relationEmbeddedId, opts);
           }
 
           embedPromise = new Ember.RSVP.Promise((resolve, reject) => {
