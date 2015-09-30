@@ -163,8 +163,15 @@ export default DS.Adapter.extend(Ember.Evented, {
         for (var id in namespace.records) {
           results.push(Ember.copy(namespace.records[id]));
         }
+
         resolve(results);
       });
+    }).then((records) => {
+      if (records.get('length')) {
+        return this.loadRelationshipsForMany(store, type, records);
+      } else {
+        return records;
+      }
     });
   },
 

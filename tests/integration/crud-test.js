@@ -301,31 +301,59 @@ test("queryRecord", function() {
 // Relationship loading
 //------------------------------------------------------------------------------
 
+function assertionsForHasManyRelationships(items) {
+  var item1 = items.get('firstObject');
+  var item2 = items.get('lastObject');
+  equal(get(item1, 'id'), 'i1', "first item id is loaded correctly");
+  equal(get(item1, 'name'), 'one', "first item name is loaded correctly");
+  equal(get(item2, 'id'), 'i2', "first item id is loaded correctly");
+  equal(get(item2, 'name'), 'two', "first item name is loaded correctly");
+}
+
 test("load hasMany relationships when finding a single record", function() {
   expect(4);
   stop();
 
   run(function() {
     store.findRecord('list', 'l1').then(function(list) {
-      var items = list.get('items');
-      var item1 = items.get('firstObject');
-      var item2 = items.get('lastObject');
-      equal(get(item1, 'id'), 'i1', "first item id is loaded correctly");
-      equal(get(item1, 'name'), 'one', "first item name is loaded correctly");
-      equal(get(item2, 'id'), 'i2', "first item id is loaded correctly");
-      equal(get(item2, 'name'), 'two', "first item name is loaded correctly");
+      assertionsForHasManyRelationships(list.get('items'));
       start();
     });
   });
 });
 
+test("load hasMany relationships when finding multiple records", function() {
+  expect(4);
+  stop();
+
+  run(function() {
+    store.findAll('list').then(function(lists) {
+      assertionsForHasManyRelationships(lists.get('firstObject.items'));
+      start();
+    });
+  });
+});
+
+function assertionsForBelongsToRelationships(list) {
+  equal(get(list, 'id'), 'l1', "id is loaded correctly");
+  equal(get(list, 'name'), 'one', "name is loaded correctly");
+}
+
 test("load belongsTo relationships when finding a single record", function() {
   stop();
   run(function() {
     store.findRecord('item', 'i1').then(function(item) {
-      var list = item.get('list');
-      equal(get(list, 'id'), 'l1', "id is loaded correctly");
-      equal(get(list, 'name'), 'one', "name is loaded correctly");
+      assertionsForBelongsToRelationships(item.get('list'));
+      start();
+    });
+  });
+});
+
+test("load belongsTo relationships when finding multiple records", function() {
+  stop();
+  run(function() {
+    store.findAll('item').then(function(items) {
+      assertionsForBelongsToRelationships(items.get('firstObject.list'));
       start();
     });
   });
