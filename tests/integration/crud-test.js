@@ -279,7 +279,6 @@ test("queryRecord", function() {
     store.queryRecord('list', {
       name: 'one'
     }).then(function(list) {
-      Ember.Logger.debug('LIST', list);
       equal(get(list, 'id'), 'l1', "id is loaded correctly");
       equal(get(list, 'name'), 'one', "name is loaded correctly");
       equal(get(list, 'b'), true, "b is loaded correctly");
