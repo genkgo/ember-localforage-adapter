@@ -60,6 +60,26 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
+  findAll: function (store, type) {
+    return new Ember.RSVP.Promise((resolve, reject) => {
+      this._namespaceForType(type).then(function (namespace) {
+        var results = [];
+
+        for (var id in namespace.records) {
+          results.push(Ember.copy(namespace.records[id]));
+        }
+
+        resolve(results);
+      });
+    }).then((records) => {
+      if (records.get('length')) {
+        return this.loadRelationshipsForMany(store, type, records);
+      } else {
+        return records;
+      }
+    });
+  },
+
   findMany: function (store, type, ids) {
     return new Ember.RSVP.Promise((resolve, reject) => {
       this._namespaceForType(type).then(function (namespace) {
@@ -84,6 +104,22 @@ export default DS.Adapter.extend(Ember.Evented, {
       } else {
         return records;
       }
+    });
+  },
+
+  queryRecord: function (store, type, query) {
+    return new Ember.RSVP.Promise((resolve, reject) => {
+      this._namespaceForType(type).then((namespace) => {
+        var record = this._query(namespace.records, query, true);
+
+        if (record) {
+          resolve(record);
+        } else {
+          reject();
+        }
+      });
+    }).then((record) => {
+      return this.loadRelationships(store, type, record);
     });
   },
 
@@ -112,22 +148,6 @@ export default DS.Adapter.extend(Ember.Evented, {
       } else {
         return records;
       }
-    });
-  },
-
-  queryRecord: function (store, type, query) {
-    return new Ember.RSVP.Promise((resolve, reject) => {
-      this._namespaceForType(type).then((namespace) => {
-        var record = this._query(namespace.records, query, true);
-
-        if (record) {
-          resolve(record);
-        } else {
-          reject();
-        }
-      });
-    }).then((record) => {
-      return this.loadRelationships(store, type, record);
     });
   },
 
@@ -160,26 +180,6 @@ export default DS.Adapter.extend(Ember.Evented, {
     }
 
     return results;
-  },
-
-  findAll: function (store, type) {
-    return new Ember.RSVP.Promise((resolve, reject) => {
-      this._namespaceForType(type).then(function (namespace) {
-        var results = [];
-
-        for (var id in namespace.records) {
-          results.push(Ember.copy(namespace.records[id]));
-        }
-
-        resolve(results);
-      });
-    }).then((records) => {
-      if (records.get('length')) {
-        return this.loadRelationshipsForMany(store, type, records);
-      } else {
-        return records;
-      }
-    });
   },
 
   createRecord: updateOrCreate,
