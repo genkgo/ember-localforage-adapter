@@ -64,9 +64,16 @@ export default DS.Adapter.extend(Ember.Evented, {
     return new Ember.RSVP.Promise((resolve, reject) => {
       this._namespaceForType(type).then(function (namespace) {
         var results = [];
+        var record;
 
         for (var i = 0; i < ids.length; i++) {
-          results.push(Ember.copy(namespace.records[ids[i]]));
+          record = namespace.records[ids[i]];
+          if (record) {
+            results.push(Ember.copy(record));
+          } else {
+            Ember.Logger.warn(
+              'Can\'t find record "' + type + '" with id "' + ids[i] + '"');
+          }
         }
 
         resolve(results);
@@ -352,6 +359,11 @@ export default DS.Adapter.extend(Ember.Evented, {
           embedPromise = new Ember.RSVP.Promise((resolve, reject) => {
             promise.then((relationRecord) => {
               resolve(this.addEmbeddedPayload(record, relationName, relationRecord));
+            }).catch(() => {
+              Ember.Logger.warn(
+                'Model "' + type + '" with id "' + record.id + '" ' +
+                'can\'t find related record "' + relationModel + '" with id "' + relationEmbeddedId + '"');
+              resolve(record);
             });
           });
 
