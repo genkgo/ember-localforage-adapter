@@ -28,55 +28,55 @@ export default DS.Adapter.extend(Ember.Evented, {
    * @param snapshot
    */
   findRecord: function (store, type, id, snapshot) {
+    var allowRecursive = true;
+    /**
+     * In the case where there are relationships, this method is called again
+     * for each relation. Given the relations have references to the main
+     * object, we use allowRecursive to avoid going further into infinite
+     * recursiveness.
+     *
+     * Concept from ember-indexdb-adapter
+     */
+    if (snapshot && typeof snapshot.allowRecursive !== 'undefined') {
+      allowRecursive = snapshot.allowRecursive;
+    }
+
     return new Ember.RSVP.Promise((resolve, reject) => {
-      var allowRecursive = true;
       this._namespaceForType(type).then((namespace) => {
-        /**
-         * In the case where there are relationships, this method is called again
-         * for each relation. Given the relations have references to the main
-         * object, we use allowRecursive to avoid going further into infinite
-         * recursiveness.
-         *
-         * Concept from ember-indexdb-adapter
-         */
-        if (snapshot && typeof snapshot.allowRecursive !== 'undefined') {
-          allowRecursive = snapshot.allowRecursive;
-        }
-
         var record = namespace.records[id];
-        if (!record) {
-          reject();
-          return;
-        }
 
-        if (allowRecursive) {
-          this.loadRelationships(store, type, record).then(function (finalRecord) {
-            resolve(finalRecord);
-          });
-        } else {
+        if (record) {
           resolve(record);
+        } else {
+          reject();
         }
       });
+    }).then((record) => {
+      if (allowRecursive) {
+        return this.loadRelationships(store, type, record);
+      } else {
+        return record;
+      }
     });
   },
 
   findMany: function (store, type, ids) {
     return new Ember.RSVP.Promise((resolve, reject) => {
       this._namespaceForType(type).then(function (namespace) {
-        var results = [];
+        var records = [];
         var record;
 
         for (var i = 0; i < ids.length; i++) {
           record = namespace.records[ids[i]];
           if (record) {
-            results.push(Ember.copy(record));
+            records.push(Ember.copy(record));
           } else {
             Ember.Logger.warn(
               'Can\'t find record "' + type + '" with id "' + ids[i] + '"');
           }
         }
 
-        resolve(results);
+        resolve(records);
       });
     }).then((records) => {
       if (records.get('length')) {
@@ -103,32 +103,32 @@ export default DS.Adapter.extend(Ember.Evented, {
   query: function (store, type, query) {
     return new Ember.RSVP.Promise((resolve, reject) => {
       this._namespaceForType(type).then((namespace) => {
-        var results = this._query(namespace.records, query);
-
-        if (results.get('length')) {
-          results = this.loadRelationshipsForMany(store, type, results);
-        }
-
-        resolve(results);
+        var records = this._query(namespace.records, query);
+        resolve(records);
       });
+    }).then((records) => {
+      if (records.get('length')) {
+        return this.loadRelationshipsForMany(store, type, records);
+      } else {
+        return records;
+      }
     });
-
   },
 
   queryRecord: function (store, type, query) {
     return new Ember.RSVP.Promise((resolve, reject) => {
       this._namespaceForType(type).then((namespace) => {
-        var result = this._query(namespace.records, query, true);
+        var record = this._query(namespace.records, query, true);
 
-        if (result) {
-          result = this.loadRelationships(store, type, result);
-          resolve(result);
+        if (record) {
+          resolve(record);
         } else {
           reject();
         }
       });
+    }).then((record) => {
+      return this.loadRelationships(store, type, record);
     });
-
   },
 
   _query: function (records, query, singleMatch) {
