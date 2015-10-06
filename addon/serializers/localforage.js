@@ -5,25 +5,33 @@ export default DS.JSONSerializer.extend({
 
   isNewSerializerAPI: true,
 
-  serializeHasMany: function (snapshot, json, relationship) {
+  _shouldSerializeHasMany: function (snapshot, key, relationship) {
+    var relationshipType = snapshot.type.determineRelationshipType(relationship, this.store);
+    if (this._mustSerialize(key)) {
+      return true;
+    }
+    return this._canSerialize(key) &&
+      (relationshipType === 'manyToNone' ||
+        relationshipType === 'manyToMany' ||
+        relationshipType === 'manyToOne');
+  },  
+
+  // Omit the unknown hasMany relationships of pushed record
+  // (see https://github.com/emberjs/data/issues/3760)
+  serializeHasMany: function(snapshot, json, relationship) {
     var key = relationship.key;
 
-    if (this._canSerialize(key)) {
-      var payloadKey;
+    if (this._shouldSerializeHasMany(snapshot, key, relationship)) {
+      var hasMany = snapshot.hasMany(key, { ids: true });
+      if (hasMany !== undefined) {
+        // if provided, use the mapping provided by `attrs` in
+        // the serializer
+        var payloadKey = this._getMappedKey(key);
+        if (payloadKey === key && this.keyForRelationship) {
+          payloadKey = this.keyForRelationship(key, "hasMany", "serialize");
+        }
 
-      // if provided, use the mapping provided by `attrs` in
-      // the serializer
-      payloadKey = this._getMappedKey(key);
-      if (payloadKey === key && this.keyForRelationship) {
-        payloadKey = this.keyForRelationship(key, "hasMany", "serialize");
-      }
-
-      var relationshipType = snapshot.type.determineRelationshipType(relationship, this.store);
-
-      if (relationshipType === 'manyToNone' ||
-        relationshipType === 'manyToMany' ||
-        relationshipType === 'manyToOne') {
-        json[payloadKey] = snapshot.hasMany(key, {ids: true});
+        json[payloadKey] = hasMany;
         // TODO support for polymorphic manyToNone and manyToMany relationships
       }
     }
@@ -88,6 +96,19 @@ export default DS.JSONSerializer.extend({
 
       delete payload._embedded;
     }
+
+    // Remove the undefined hasMany relationships
+    // (related to https://github.com/emberjs/data/issues/3736, although non
+    // blocking in Ember Data 1.13)
+    var relationshipNames = Ember.get(primaryModelClass, 'relationshipNames');
+    var relationships     = relationshipNames.hasMany;
+
+    relationships.forEach((relationName) => {
+      if (Ember.isNone(payload[relationName])) {
+        delete payload[relationName];
+      }
+    });
+
 
     return payload;
   },
