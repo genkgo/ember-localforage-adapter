@@ -5,6 +5,7 @@ import {
 from 'ember-qunit';
 import startApp from '../helpers/start-app';
 import FIXTURES from '../helpers/fixtures/crud';
+import MOCK_FIXTURES from '../helpers/fixtures/mock';
 
 var App;
 var store;
@@ -19,7 +20,9 @@ module("CRUD", {
     stop();
     run(function() {
       window.localforage.setItem('DS.LFAdapter', FIXTURES).then(function() {
-        start();
+        window.localforage.setItem('MockAdapter', MOCK_FIXTURES).then(function() {
+          start();
+        });
       });
     });
 
@@ -301,32 +304,136 @@ test("queryRecord", function() {
 // Relationship loading
 //------------------------------------------------------------------------------
 
-test("load hasMany relationships when finding a single record", function() {
+function assertionsForHasManyRelationships(items) {
   expect(4);
+  var item1 = items.get('firstObject');
+  var item2 = items.get('lastObject');
+  equal(get(item1, 'id'), 'i1', "first item id is loaded correctly");
+  equal(get(item1, 'name'), 'one', "first item name is loaded correctly");
+  equal(get(item2, 'id'), 'i2', "first item id is loaded correctly");
+  equal(get(item2, 'name'), 'two', "first item name is loaded correctly");
+  start();
+}
+
+test("load hasMany relationships when finding a single record", function() {
   stop();
 
   run(function() {
     store.findRecord('list', 'l1').then(function(list) {
       list.get('items').then(function(items) {
-        var item1 = items.get('firstObject');
-        var item2 = items.get('lastObject');
-        equal(get(item1, 'id'), 'i1', "first item id is loaded correctly");
-        equal(get(item1, 'name'), 'one', "first item name is loaded correctly");
-        equal(get(item2, 'id'), 'i2', "first item id is loaded correctly");
-        equal(get(item2, 'name'), 'two', "first item name is loaded correctly");
-        start();
+        assertionsForHasManyRelationships(items);
       });
     });
   });
 });
+test("load hasMany relationships when finding multiple records", function() {
+  stop();
+
+  run(function() {
+    store.findAll('list').then(function(lists) {
+      lists.get('firstObject.items').then(function(items) {
+        assertionsForHasManyRelationships(items);
+      });
+    });
+  });
+});
+
+function assertionsForMissingHasManyRelationships(post) {
+  expect(2);
+  var p1 = post.get('comments').catch(function() {
+    ok(true, "Missing comments prevent all comments from being loaded");
+  });
+  var p2 = post.get('subscribers').catch(function() {
+    ok(true, "Missing external subscribers prevent all comments from being loaded");
+  });
+  Ember.RSVP.all([p1, p2]).then(function() {
+    start();
+  });
+}
+
+test("load with missing hasMany relationships when finding a single record", function() {
+  stop();
+
+  run(function() {
+    store.findRecord('post', 'p1').then(function(post) {
+      assertionsForMissingHasManyRelationships(post);
+    });
+  });
+});
+
+test("load with missing hasMany relationships when finding multiple records", function() {
+  stop();
+
+  run(function() {
+    store.findAll('post').then(function(posts) {
+      assertionsForMissingHasManyRelationships(posts.get('firstObject'));
+    });
+  });
+});
+
+function assertionsForBelongsToRelationships(list) {
+  equal(get(list, 'id'), 'l1', "id is loaded correctly");
+  equal(get(list, 'name'), 'one', "name is loaded correctly");
+  start();
+}
 
 test("load belongsTo relationships when finding a single record", function() {
   stop();
   run(function() {
     store.findRecord('item', 'i1').then(function(item) {
       item.get('list').then(function(list) {
-        equal(get(list, 'id'), 'l1', "id is loaded correctly");
-        equal(get(list, 'name'), 'one', "name is loaded correctly");
+        assertionsForBelongsToRelationships(list);
+      });
+    });
+  });
+});
+
+test("load belongsTo relationships when finding multiple records", function() {
+  stop();
+
+  run(function() {
+    store.findAll('item').then(function(items) {
+      items.get('firstObject.list').then(function(list) {
+        assertionsForBelongsToRelationships(list);
+      });
+    });
+  });
+});
+
+test("load with missing belongsTo relationships when finding a single record", function() {
+  expect(2);
+  stop();
+
+  run(function() {
+    var p1 = store.findRecord('comment', 'c2').then(function(comment) {
+      return comment.get('post').catch(function() {
+        ok(true, "Related post can\'t be resolved");
+      });
+    });
+    var p2 = store.findRecord('comment', 'c4').then(function(comment) {
+      return comment.get('author').catch(function() {
+        ok(true, "External related author can\'t be resolved");
+      });
+    });
+    Ember.RSVP.all([p1, p2]).then(function() {
+      start();
+    });
+  });
+});
+
+test("load with missing belongsTo relationships when finding multiple records", function() {
+  expect(2);
+  stop();
+
+  run(function() {
+    store.findAll('comment').then(function(comments) {
+      var p1 = comments.objectAt(1).get('post').catch(function() {
+        ok(true, "Related post can\'t be resolved");
+      });
+      var p2 = comments.objectAt(3).get('author').catch(function() {
+        ok(true, "External related author can\'t be resolved");
+      });
+      Ember.RSVP.all([p1, p2]).then(function() {
         start();
       });
     });

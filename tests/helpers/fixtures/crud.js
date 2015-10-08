@@ -1,4 +1,23 @@
 export default {
+  'post': {
+    records: {
+      'p1': {
+        id: 'p1',
+        title: 'post #1',
+        comments: ['c1', 'missingComment'],
+        subscribers: ['externalS1', 'missingSubscriber']
+      }
+    }
+  },
+
+  'comment': {
+    records: {
+      'c1': {id: 'c1', title: 'comment #1', post: 'p1' },
+      'c2': {id: 'c2', title: 'comment #2', post: 'missingPost'},
+      'c3': {id: 'c3', title: 'comment #3', post: 'p1', author: 'externalA1' },
+      'c4': {id: 'c4', title: 'comment #3', post: 'p1', author: 'missingAuthor' }
+    }
+  },
   'list': {
     records: {
       'l1': {id: 'l1', name: 'one', b: true, items: ['i1', 'i2'], day: 24},
