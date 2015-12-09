@@ -27,41 +27,19 @@ module('Cache helper', {
   }
 });
 
-//test('cache uses copies when using set', function (assert) {
-//  assert.expect(2);
-//
-//  run(function () {
-//    cache.set('modelname', FIXTURES);
-//
-//    var cacheResponse = cache.get('modelname');
-//
-//    assert.deepEqual(FIXTURES[0], cacheResponse[0]);
-//    assert.notStrictEqual(FIXTURES[0], cacheResponse[0]);
-//  });
-//});
-//
-//test('cache uses copies when using replace', function (assert) {
-//  assert.expect(3);
-//
-//  run(function () {
-//    var replacement = {
-//      "modelname": [{
-//        id: 1,
-//        name: "replace"
-//      }]
-//    };
-//
-//    cache.set('modelname', FIXTURES);
-//    cache.replace(replacement);
-//
-//    var cacheResponse = cache.get('modelname');
-//    var replaceResponse = replacement["modelname"];
-//
-//    assert.deepEqual(replaceResponse[0], cacheResponse[0]);
-//    assert.notStrictEqual(replaceResponse[0], cacheResponse[0]);
-//    assert.notDeepEqual(FIXTURES[0], cacheResponse[0]);
-//  });
-//});
+test('cache set/get', function (assert) {
+  assert.expect(2);
+
+  run(function () {
+    cache.set('modelname', {
+      a: 'b',
+      b: 'c'
+    });
+
+    assert.equal('b', cache.get('modelname').a);
+    assert.equal('c', cache.get('modelname').b);
+  });
+});
 
 test('cache clear', function (assert) {
   assert.expect(1);
