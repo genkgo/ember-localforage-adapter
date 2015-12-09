@@ -10,14 +10,14 @@ export default Ember.Object.extend({
 
   get: function (namespace) {
     if (this.data.get(namespace)) {
-      return Ember.copy(Ember.A(this.data.get(namespace)), true);
+      return this.data.get(namespace);
     } else {
       return null;
     }
   },
 
   set: function (namespace, objects) {
-    this.data.set(namespace, Ember.copy(Ember.A(objects), true));
+    this.data.set(namespace, objects);
   },
 
   replace: function (data) {

@@ -1,4 +1,4 @@
-import { moduleFor, test } from 'ember-qunit';
+import { moduleFor } from 'ember-qunit';
 
 // The default (application) adapter is the DRF adapter.
 // see app/adapters/application.js

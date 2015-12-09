@@ -1,22 +1,20 @@
 import Ember from 'ember';
-import { test } from 'ember-qunit';
+import {module, test} from 'qunit';
 import startApp from '../helpers/start-app';
+import destroyApp from '../helpers/destroy-app';
 import FIXTURES from '../helpers/fixtures/display-deep-model';
 
 var App;
 var store;
 var adapter;
-var server;
 var run = Ember.run;
-var get = Ember.get;
-var set = Ember.set;
 
 module('Display deep model', {
-  setup: function () {
-    stop();
+  beforeEach: function (assert) {
+    var done = assert.async();
     run(function () {
       window.localforage.setItem('DS.LFAdapter', FIXTURES).then(function () {
-        start();
+        done();
       });
     });
 
@@ -28,23 +26,25 @@ module('Display deep model', {
     });
   },
 
-  teardown: function () {
-    run(App, 'destroy');
+  afterEach: function () {
+    run(function () {
+      destroyApp(App);
+    });
   }
 });
 
-test('find customer -> hour -> order', function () {
-  expect(4);
+test('find customer -> hour -> order', function (assert) {
+  assert.expect(4);
 
   visit('/purchase/1');
   andThen(function () {
-    stop();
+    var done = assert.async();
     run.later(function() {
-      equal(find('div.name').text(), 'credits');
-      equal(find('div.amount').text(), '10');
-      equal(find('div.player').text(), 'one');
-      equal(find('div.ledger').text(), 'payable');
-      start();
+      assert.equal(find('div.name').text(), 'credits');
+      assert.equal(find('div.amount').text(), '10');
+      assert.equal(find('div.player').text(), 'one');
+      assert.equal(find('div.ledger').text(), 'payable');
+      done();
     }, 300);
   });
 });

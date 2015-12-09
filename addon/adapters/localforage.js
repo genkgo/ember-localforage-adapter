@@ -9,11 +9,11 @@ export default DS.Adapter.extend(Ember.Evented, {
   cache: LFCache.create(),
   caching: 'model',
 
-  shouldBackgroundReloadRecord: function (store, snapshot) {
+  shouldBackgroundReloadRecord: function () {
     return false;
   },
 
-  shouldReloadAll: function (store, snapshotRecordArray) {
+  shouldReloadAll: function () {
     return true;
   },
 
@@ -25,9 +25,8 @@ export default DS.Adapter.extend(Ember.Evented, {
    * @param store
    * @param {DS.Model} type
    * @param {Object|String|Integer|null} id
-   * @param snapshot
    */
-  findRecord: function (store, type, id, snapshot) {
+  findRecord: function (store, type, id) {
     return new Ember.RSVP.Promise((resolve, reject) => {
       this._namespaceForType(type).then((namespace) => {
         var record = namespace.records[id];
@@ -41,7 +40,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   findAll: function (store, type) {
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Ember.RSVP.Promise((resolve) => {
       this._namespaceForType(type).then(function (namespace) {
         var records = [];
 
@@ -57,7 +56,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   coalesceFindRequests: true,
 
   findMany: function (store, type, ids) {
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Ember.RSVP.Promise((resolve) => {
       this._namespaceForType(type).then(function (namespace) {
         var records = [];
         var record;
@@ -102,7 +101,7 @@ export default DS.Adapter.extend(Ember.Evented, {
    *  { complete: true, name: /foo|bar/ }
    */
   query: function (store, type, query) {
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Ember.RSVP.Promise((resolve) => {
       this._namespaceForType(type).then((namespace) => {
         var records = this._query(namespace.records, query);
         resolve(records);
@@ -147,7 +146,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   updateRecord: updateOrCreate,
 
   deleteRecord: function (store, type, snapshot) {
-    return this.queue.attach((resolve, reject) => {
+    return this.queue.attach((resolve) => {
       this._namespaceForType(type).then((namespaceRecords) => {
         var id = snapshot.id;
 
@@ -171,7 +170,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   loadData: function () {
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Ember.RSVP.Promise((resolve) => {
       window.localforage.getItem(this.adapterNamespace()).then(function (storage) {
         var resolved = storage ? storage : {};
         resolve(resolved);
@@ -181,7 +180,7 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   persistData: function (type, data) {
     var modelNamespace = this.modelNamespace(type);
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Ember.RSVP.Promise((resolve) => {
       if (this.caching !== 'none') {
         this.cache.set(modelNamespace, data);
       }
@@ -206,7 +205,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     if (cache) {
       promise = Ember.RSVP.resolve(cache);
     } else {
-      promise = new Ember.RSVP.Promise((resolve, reject) => {
+      promise = new Ember.RSVP.Promise((resolve) => {
         window.localforage.getItem(this.adapterNamespace()).then((storage) => {
           var ns = storage ? storage[namespace] || {records: {}} : {records: {}};
           if (this.caching === 'model') {
@@ -229,7 +228,7 @@ export default DS.Adapter.extend(Ember.Evented, {
 });
 
 function updateOrCreate(store, type, snapshot) {
-  return this.queue.attach((resolve, reject) => {
+  return this.queue.attach((resolve) => {
     this._namespaceForType(type).then((namespaceRecords) => {
       var serializer = store.serializerFor(type.modelName);
       var recordHash = serializer.serialize(snapshot, {includeId: true});
