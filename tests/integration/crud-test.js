@@ -48,10 +48,12 @@ test("push", function() {
 
   run(function() {
     var list = store.push({
-      type: 'list',
-      id: adapter.generateIdForRecord(),
-      attributes: {
-        name: 'Rambo'
+      data: {
+        type: 'list',
+        id: adapter.generateIdForRecord(),
+        attributes: {
+          name: 'Rambo'
+        }
       }
     });
 

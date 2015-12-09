@@ -27,7 +27,7 @@
     "jquery": "1.11.x",
     "localforage": "1.2.x",
     "ember": "2.1.x",
-    "ember-data": "2.1.x",
+    "ember-data": "2.2.x",
     "ember-resolver": "~0.1.14",
     "loader.js": "ember-cli/loader.js#3.3.x",
     "ember-cli-shims": "ember-cli/ember-cli-shims#~0.0.5",

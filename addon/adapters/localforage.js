@@ -225,7 +225,7 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   modelNamespace: function (type) {
     return type.url || type.modelName;
-  },
+  }
 });
 
 function updateOrCreate(store, type, snapshot) {
