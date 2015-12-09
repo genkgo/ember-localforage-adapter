@@ -10,6 +10,8 @@ var store;
 var adapter;
 var run = Ember.run;
 var get = Ember.get;
+var proto = Object.prototype;
+var gpo = Object.getPrototypeOf;
 
 module("Cache integration", {
   beforeEach: function(assert) {
@@ -35,6 +37,18 @@ module("Cache integration", {
   }
 });
 
+/**
+ * @credits https://github.com/nickb1080/is-pojo
+ * @param obj
+ * @returns {boolean}
+ */
+function isPojo(obj) {
+  if (obj === null || typeof obj !== "object") {
+    return false;
+  }
+  return gpo(obj) === proto;
+}
+
 test("cache should be unbound data", function(assert) {
   assert.expect(13);
 
@@ -56,19 +70,19 @@ test("cache should be unbound data", function(assert) {
       assert.equal(get(secondRecord, 'day'), 2, "Second item's day is 2");
       assert.equal(get(thirdRecord, 'day'), 3, "Third item's day is 3");
 
-      listCache = adapter.get('cache').get('list').records;
-      assert.equal(listCache[get(firstRecord, 'id')].name, 'one');
-      assert.equal(listCache[get(firstRecord, 'id')].addObserver, null);
+      listCache = adapter.get('cache').get('list');
+      assert.equal(isPojo(listCache), true);
+      assert.equal(listCache.records[get(firstRecord, 'id')].name, 'one');
 
       firstRecord.set('name', 'two');
-      listCache = adapter.get('cache').get('list').records;
-      assert.equal(listCache[get(firstRecord, 'id')].name, 'one');
-      assert.equal(listCache[get(firstRecord, 'id')].addObserver, null);
+      listCache = adapter.get('cache').get('list');
+      assert.equal(isPojo(listCache), true);
+      assert.equal(listCache.records[get(firstRecord, 'id')].name, 'one');
 
       firstRecord.save().then(function () {
-        listCache = adapter.get('cache').get('list').records;
-        assert.equal(listCache[get(firstRecord, 'id')].name, 'two');
-        assert.equal(listCache[get(firstRecord, 'id')].addObserver, null);
+        listCache = adapter.get('cache').get('list');
+        assert.equal(isPojo(listCache), true);
+        assert.equal(listCache.records[get(firstRecord, 'id')].name, 'two');
         done();
       });
     });
