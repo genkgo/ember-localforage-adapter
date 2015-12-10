@@ -5,7 +5,8 @@
   "authors": [
     "Ryan Florence <rpflorence@gmail.com>",
     "Frederik Bosch <f.bosch@genkgo.nl>",
-    "Jildert Miedema <jildertmiedema@gmail.com>"
+    "Jildert Miedema <jildertmiedema@gmail.com>",
+    "Sébastien Tisserant <s.tisserant@gmail.com>"
   ],
   "description": "Store your ember application data in Mozilla's localforage. This project is orginally forked from ember-localstorage-adapter",
   "main": "localforage_adapter.js",
