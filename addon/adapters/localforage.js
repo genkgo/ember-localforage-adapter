@@ -45,7 +45,7 @@ export default DS.Adapter.extend(Ember.Evented, {
         var records = [];
 
         for (var id in namespace.records) {
-          records.push(Ember.copy(namespace.records[id]));
+          records.push(namespace.records[id]);
         }
 
         resolve(records);
@@ -64,7 +64,7 @@ export default DS.Adapter.extend(Ember.Evented, {
         for (var i = 0; i < ids.length; i++) {
           record = namespace.records[ids[i]];
           if (record) {
-            records.push(Ember.copy(record));
+            records.push(record);
           }
         }
 
