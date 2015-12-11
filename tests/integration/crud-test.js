@@ -646,29 +646,31 @@ test("save hasMany relationships", function(assert) {
 //------------------------------------------------------------------------------
 
 test("perform multiple changes in bulk", function(assert) {
-  let done = assert.async();
+  const done = assert.async();
   run(function() {
 
-    var listToUpdate = store.findRecord('list', 'l1').then(function(list) {
-      list.set('name', 'updated');
-      return list.save();
-    });
+    let promises = [];
 
-    var listToCreate = store.createRecord('list', { name: 'Rambo' }).save();
+    promises.push(
+      store.findRecord('list', 'l1').then(function(list) {
+        list.set('name', 'updated');
+        return list.save();
+      })
+    );
 
-    var listToDelete = store.findRecord('list', 'l2').then(function(list) {
-      return list.destroyRecord();
-    });
+    promises.push(
+      store.createRecord('list', { name: 'Rambo' }).save()
+    );
 
-    var promises = [
-      listToUpdate,
-      listToCreate,
-      listToDelete
-    ];
+    promises.push(
+      store.findRecord('list', 'l2').then(function(list) {
+        return list.destroyRecord();
+      })
+    );
 
     Ember.RSVP.all(promises).then(function() {
 
-      promises = Ember.A();
+      promises = [];
 
       promises.push(
         store.findRecord('list', 'l1').then(function(list) {
