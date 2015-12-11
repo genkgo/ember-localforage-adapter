@@ -4,27 +4,29 @@ export default Ember.Object.extend({
 
   data: Ember.Map.create(),
 
-  clear: function () {
+  clear() {
     this.data.clear();
   },
 
-  get: function (namespace) {
-    if (this.data.get(namespace)) {
-      return this.data.get(namespace);
-    } else {
+  get(namespace) {
+    const data = this.data.get(namespace);
+
+    if (!data) {
       return null;
     }
+
+    return data;
   },
 
-  set: function (namespace, objects) {
+  set(namespace, objects) {
     this.data.set(namespace, objects);
   },
 
-  replace: function (data) {
+  replace(data) {
     this.clear();
-    for (var index in data) {
+    
+    for (let index in data) {
       this.set(index, data[index]);
     }
   }
-
 });
