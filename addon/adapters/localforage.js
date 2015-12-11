@@ -154,14 +154,9 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   // private
 
-  _loadData() {
-    return window.localforage.getItem(this._adapterNamespace()).then((storage) => {
-      return storage ? storage : {};
-    });
-  },
-
   _setNamespaceData(type, namespaceData) {
     const modelNamespace = this._modelNamespace(type);
+    
     return this._loadData().then((storage) => {
       if (this.caching !== 'none') {
         this.cache.set(modelNamespace, namespaceData);
@@ -184,7 +179,7 @@ export default DS.Adapter.extend(Ember.Evented, {
       }
     }
 
-    return window.localforage.getItem(this._adapterNamespace()).then((storage) => {
+    return this._loadData().then((storage) => {
       const namespaceData = storage && storage[modelNamespace] || { records: {} };
 
       if (this.caching === 'model') {
@@ -196,6 +191,12 @@ export default DS.Adapter.extend(Ember.Evented, {
       }
 
       return namespaceData;
+    });
+  },
+
+  _loadData() {
+    return window.localforage.getItem(this._adapterNamespace()).then((storage) => {
+      return storage ? storage : {};
     });
   },
 
