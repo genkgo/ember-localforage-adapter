@@ -29,11 +29,12 @@ export default DS.Adapter.extend(Ember.Evented, {
   findRecord: function (store, type, id) {
     return this._namespaceForType(type).then((namespace) => {
       var record = namespace.records[id];
-      if (record) {
-        return record;
-      } else {
+      
+      if (!record) {
         return Ember.RSVP.reject();
       }
+
+      return record;
     });
   },
 
@@ -70,11 +71,12 @@ export default DS.Adapter.extend(Ember.Evented, {
   queryRecord: function (store, type, query) {
     return this._namespaceForType(type).then((namespace) => {
       var record = this._query(namespace.records, query, true);
-      if (record) {
-        return record;
-      } else {
+
+      if (!record) {
         return Ember.RSVP.reject();
       }
+
+      return record;
     });
   },
 
@@ -93,8 +95,7 @@ export default DS.Adapter.extend(Ember.Evented, {
    */
   query: function (store, type, query) {
     return this._namespaceForType(type).then((namespace) => {
-      var records = this._query(namespace.records, query);
-      return records;
+      return this._query(namespace.records, query);
     });
   },
 
@@ -159,8 +160,7 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   loadData: function () {
     return window.localforage.getItem(this.adapterNamespace()).then(function (storage) {
-      var resolved = storage ? storage : {};
-      return resolved;
+      return storage ? storage : {};
     });
   },
 
@@ -170,36 +170,37 @@ export default DS.Adapter.extend(Ember.Evented, {
       if (this.caching !== 'none') {
         this.cache.set(modelNamespace, data);
       }
+
       localStorageData[modelNamespace] = data;
+
       return window.localforage.setItem(this.adapterNamespace(), localStorageData);
     });
   },
 
   _namespaceForType: function (type) {
     var namespace = this.modelNamespace(type);
-    var cache, promise;
 
     if (this.caching !== 'none') {
-      cache = this.cache.get(namespace);
-    } else {
-      cache = null;
+      var cache = this.cache.get(namespace);
+
+      if (cache) {
+        return Ember.RSVP.resolve(cache);
+      }
     }
-    if (cache) {
-      promise = Ember.RSVP.resolve(cache);
-    } else {
-      promise = window.localforage.getItem(this.adapterNamespace()).then((storage) => {
-        var ns = storage ? storage[namespace] || {records: {}} : {records: {}};
-        if (this.caching === 'model') {
-          this.cache.set(namespace, ns);
-        } else if (this.caching === 'all') {
-          if (storage) {
-            this.cache.replace(storage);
-          }
+
+    return window.localforage.getItem(this.adapterNamespace()).then((storage) => {
+      var ns = storage && storage[namespace] || { records: {} };
+
+      if (this.caching === 'model') {
+        this.cache.set(namespace, ns);
+      } else if (this.caching === 'all') {
+        if (storage) {
+          this.cache.replace(storage);
         }
-        return ns;
-      });
-    }
-    return promise;
+      }
+
+      return ns;
+    });
   },
 
   modelNamespace: function (type) {
@@ -216,6 +217,7 @@ function updateOrCreate(store, type, snapshot) {
       var id = snapshot.id || recordHash.id;
 
       namespaceRecords.records[id] = recordHash;
+
       this.persistData(type, namespaceRecords).then(function () {
         resolve();
       });
