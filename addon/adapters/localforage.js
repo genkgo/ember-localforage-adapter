@@ -141,7 +141,7 @@ export default DS.Adapter.extend(Ember.Evented, {
       this._namespaceForType(type).then((namespace) => {
         delete namespace.records[snapshot.id];
 
-        this.persistData(type, namespace).then(() => {
+        this._persistData(type, namespace).then(() => {
           resolve();
         });
       });
@@ -154,31 +154,27 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   // private
 
-  adapterNamespace() {
-    return this.get('namespace') || 'DS.LFAdapter';
-  },
-
-  loadData() {
-    return window.localforage.getItem(this.adapterNamespace()).then((storage) => {
+  _loadData() {
+    return window.localforage.getItem(this._adapterNamespace()).then((storage) => {
       return storage ? storage : {};
     });
   },
 
-  persistData(type, data) {
-    const modelNamespace = this.modelNamespace(type);
-    return this.loadData().then((localStorageData) => {
+  _persistData(type, data) {
+    const modelNamespace = this._modelNamespace(type);
+    return this._loadData().then((localStorageData) => {
       if (this.caching !== 'none') {
         this.cache.set(modelNamespace, data);
       }
 
       localStorageData[modelNamespace] = data;
 
-      return window.localforage.setItem(this.adapterNamespace(), localStorageData);
+      return window.localforage.setItem(this._adapterNamespace(), localStorageData);
     });
   },
 
   _namespaceForType(type) {
-    const modelNamespace = this.modelNamespace(type);
+    const modelNamespace = this._modelNamespace(type);
 
     if (this.caching !== 'none') {
       const cache = this.cache.get(modelNamespace);
@@ -188,7 +184,7 @@ export default DS.Adapter.extend(Ember.Evented, {
       }
     }
 
-    return window.localforage.getItem(this.adapterNamespace()).then((storage) => {
+    return window.localforage.getItem(this._adapterNamespace()).then((storage) => {
       const namespace = storage && storage[modelNamespace] || { records: {} };
 
       if (this.caching === 'model') {
@@ -203,8 +199,12 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  modelNamespace(type) {
+  _modelNamespace(type) {
     return type.url || type.modelName;
+  },
+
+  _adapterNamespace() {
+    return this.get('namespace') || 'DS.LFAdapter';
   }
 });
 
@@ -218,7 +218,7 @@ function updateOrCreate(store, type, snapshot) {
 
       namespace.records[id] = recordHash;
 
-      this.persistData(type, namespace).then(() => {
+      this._persistData(type, namespace).then(() => {
         resolve();
       });
     });
