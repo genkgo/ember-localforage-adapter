@@ -166,10 +166,10 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   persistData: function (type, data) {
     var modelNamespace = this.modelNamespace(type);
-    if (this.caching !== 'none') {
-      this.cache.set(modelNamespace, data);
-    }
     return this.loadData().then((localStorageData) => {
+      if (this.caching !== 'none') {
+        this.cache.set(modelNamespace, data);
+      }
       localStorageData[modelNamespace] = data;
       return window.localforage.setItem(this.adapterNamespace(), localStorageData);
     });
