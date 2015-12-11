@@ -29,8 +29,8 @@ export default DS.Adapter.extend(Ember.Evented, {
    * @param {Object|String|Integer|null} id
    */
   findRecord(store, type, id) {
-    return this._namespaceForType(type).then((namespace) => {
-      const record = namespace.records[id];
+    return this._getNamespaceData(type).then((namespaceData) => {
+      const record = namespaceData.records[id];
       
       if (!record) {
         return Ember.RSVP.reject();
@@ -41,11 +41,11 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   findAll(store, type) {
-    return this._namespaceForType(type).then((namespace) => {
+    return this._getNamespaceData(type).then((namespaceData) => {
       const records = [];
 
-      for (let id in namespace.records) {
-        records.push(namespace.records[id]);
+      for (let id in namespaceData.records) {
+        records.push(namespaceData.records[id]);
       }
 
       return records;
@@ -53,11 +53,11 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   findMany(store, type, ids) {
-    return this._namespaceForType(type).then((namespace) => {
+    return this._getNamespaceData(type).then((namespaceData) => {
       const records = [];
 
       for (let i = 0; i < ids.length; i++) {
-        const record = namespace.records[ids[i]];
+        const record = namespaceData.records[ids[i]];
 
         if (record) {
           records.push(record);
@@ -69,8 +69,8 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   queryRecord(store, type, query) {
-    return this._namespaceForType(type).then((namespace) => {
-      const record = this._query(namespace.records, query, true);
+    return this._getNamespaceData(type).then((namespaceData) => {
+      const record = this._query(namespaceData.records, query, true);
 
       if (!record) {
         return Ember.RSVP.reject();
@@ -94,8 +94,8 @@ export default DS.Adapter.extend(Ember.Evented, {
    *  { complete: true, name: /foo|bar/ }
    */
   query(store, type, query) {
-    return this._namespaceForType(type).then((namespace) => {
-      return this._query(namespace.records, query);
+    return this._getNamespaceData(type).then((namespaceData) => {
+      return this._query(namespaceData.records, query);
     });
   },
 
@@ -138,10 +138,10 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   deleteRecord(store, type, snapshot) {
     return this.queue.attach((resolve) => {
-      this._namespaceForType(type).then((namespace) => {
-        delete namespace.records[snapshot.id];
+      this._getNamespaceData(type).then((namespaceData) => {
+        delete namespaceData.records[snapshot.id];
 
-        this._persistData(type, namespace).then(() => {
+        this._setNamespaceData(type, namespaceData).then(() => {
           resolve();
         });
       });
@@ -160,20 +160,20 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  _persistData(type, data) {
+  _setNamespaceData(type, namespaceData) {
     const modelNamespace = this._modelNamespace(type);
-    return this._loadData().then((localStorageData) => {
+    return this._loadData().then((storage) => {
       if (this.caching !== 'none') {
-        this.cache.set(modelNamespace, data);
+        this.cache.set(modelNamespace, namespaceData);
       }
 
-      localStorageData[modelNamespace] = data;
+      storage[modelNamespace] = namespaceData;
 
-      return window.localforage.setItem(this._adapterNamespace(), localStorageData);
+      return window.localforage.setItem(this._adapterNamespace(), storage);
     });
   },
 
-  _namespaceForType(type) {
+  _getNamespaceData(type) {
     const modelNamespace = this._modelNamespace(type);
 
     if (this.caching !== 'none') {
@@ -185,17 +185,17 @@ export default DS.Adapter.extend(Ember.Evented, {
     }
 
     return window.localforage.getItem(this._adapterNamespace()).then((storage) => {
-      const namespace = storage && storage[modelNamespace] || { records: {} };
+      const namespaceData = storage && storage[modelNamespace] || { records: {} };
 
       if (this.caching === 'model') {
-        this.cache.set(modelNamespace, namespace);
+        this.cache.set(modelNamespace, namespaceData);
       } else if (this.caching === 'all') {
         if (storage) {
           this.cache.replace(storage);
         }
       }
 
-      return namespace;
+      return namespaceData;
     });
   },
 
@@ -210,15 +210,15 @@ export default DS.Adapter.extend(Ember.Evented, {
 
 function updateOrCreate(store, type, snapshot) {
   return this.queue.attach((resolve) => {
-    this._namespaceForType(type).then((namespace) => {
+    this._getNamespaceData(type).then((namespaceData) => {
       const serializer = store.serializerFor(type.modelName);
       const recordHash = serializer.serialize(snapshot, {includeId: true});
       // update(id comes from snapshot) or create(id comes from serialization)
       const id = snapshot.id || recordHash.id;
 
-      namespace.records[id] = recordHash;
+      namespaceData.records[id] = recordHash;
 
-      this._persistData(type, namespace).then(() => {
+      this._setNamespaceData(type, namespaceData).then(() => {
         resolve();
       });
     });
