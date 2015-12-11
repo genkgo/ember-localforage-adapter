@@ -138,10 +138,10 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   deleteRecord(store, type, snapshot) {
     return this.queue.attach((resolve) => {
-      this._namespaceForType(type).then((namespaceRecords) => {
-        delete namespaceRecords.records[snapshot.id];
+      this._namespaceForType(type).then((namespace) => {
+        delete namespace.records[snapshot.id];
 
-        this.persistData(type, namespaceRecords).then(() => {
+        this.persistData(type, namespace).then(() => {
           resolve();
         });
       });
@@ -178,10 +178,10 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   _namespaceForType(type) {
-    const namespace = this.modelNamespace(type);
+    const modelNamespace = this.modelNamespace(type);
 
     if (this.caching !== 'none') {
-      const cache = this.cache.get(namespace);
+      const cache = this.cache.get(modelNamespace);
 
       if (cache) {
         return Ember.RSVP.resolve(cache);
@@ -189,17 +189,17 @@ export default DS.Adapter.extend(Ember.Evented, {
     }
 
     return window.localforage.getItem(this.adapterNamespace()).then((storage) => {
-      const ns = storage && storage[namespace] || { records: {} };
+      const namespace = storage && storage[modelNamespace] || { records: {} };
 
       if (this.caching === 'model') {
-        this.cache.set(namespace, ns);
+        this.cache.set(modelNamespace, namespace);
       } else if (this.caching === 'all') {
         if (storage) {
           this.cache.replace(storage);
         }
       }
 
-      return ns;
+      return namespace;
     });
   },
 
@@ -210,15 +210,15 @@ export default DS.Adapter.extend(Ember.Evented, {
 
 function updateOrCreate(store, type, snapshot) {
   return this.queue.attach((resolve) => {
-    this._namespaceForType(type).then((namespaceRecords) => {
+    this._namespaceForType(type).then((namespace) => {
       const serializer = store.serializerFor(type.modelName);
       const recordHash = serializer.serialize(snapshot, {includeId: true});
       // update(id comes from snapshot) or create(id comes from serialization)
       const id = snapshot.id || recordHash.id;
 
-      namespaceRecords.records[id] = recordHash;
+      namespace.records[id] = recordHash;
 
-      this.persistData(type, namespaceRecords).then(() => {
+      this.persistData(type, namespace).then(() => {
         resolve();
       });
     });
