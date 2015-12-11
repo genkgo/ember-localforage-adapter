@@ -109,7 +109,7 @@ export default DS.Adapter.extend(Ember.Evented, {
       for (let property in query) {
         const test = query[property];
 
-        if (Object.prototype.toString.call(test) === '[object RegExp]') {
+        if (test instanceof RegExp) {
           push = test.test(record[property]);
         } else {
           push = record[property] === test;
