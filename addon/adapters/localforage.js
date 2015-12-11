@@ -104,23 +104,23 @@ export default DS.Adapter.extend(Ember.Evented, {
 
     for (let id in records) {
       const record = records[id];
-      let push = false;
+      let isMatching = false;
 
       for (let property in query) {
-        const test = query[property];
+        const queryValue = query[property];
 
-        if (test instanceof RegExp) {
-          push = test.test(record[property]);
+        if (queryValue instanceof RegExp) {
+          isMatching = queryValue.test(record[property]);
         } else {
-          push = record[property] === test;
+          isMatching = record[property] === queryValue;
         }
 
-        if (push === false) {
+        if (!isMatching) {
           break; // all criteria should pass
         }
       }
 
-      if (push) {
+      if (isMatching) {
         results.push(record);
       }
 
