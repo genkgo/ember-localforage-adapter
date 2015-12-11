@@ -649,29 +649,15 @@ test("perform multiple changes in bulk", function(assert) {
   let done = assert.async();
   run(function() {
 
-    var listToUpdate = new Ember.RSVP.Promise(function(resolve) {
-      store.findRecord('list', 'l1').then(function(list) {
-        list.set('name', 'updated');
-        list.save().then(function() {
-          resolve();
-        });
-      });
+    var listToUpdate = store.findRecord('list', 'l1').then(function(list) {
+      list.set('name', 'updated');
+      return list.save();
     });
 
-    var listToCreate = new Ember.RSVP.Promise(function(resolve) {
-      store.createRecord('list', {
-        name: 'Rambo'
-      }).save().then(function() {
-        resolve();
-      });
-    });
+    var listToCreate = store.createRecord('list', { name: 'Rambo' }).save();
 
-    var listToDelete = new Ember.RSVP.Promise(function(resolve) {
-      store.findRecord('list', 'l2').then(function(list) {
-        list.destroyRecord().then(function() {
-          resolve();
-        });
-      });
+    var listToDelete = store.findRecord('list', 'l2').then(function(list) {
+      return list.destroyRecord();
     });
 
     var promises = [
@@ -685,31 +671,22 @@ test("perform multiple changes in bulk", function(assert) {
       promises = Ember.A();
 
       promises.push(
-        new Ember.RSVP.Promise(function(resolve) {
-          store.findRecord('list', 'l1').then(function(list) {
-            assert.equal(get(list, 'name'), 'updated', "Record was updated successfully");
-            resolve();
-          });
+        store.findRecord('list', 'l1').then(function(list) {
+          assert.equal(get(list, 'name'), 'updated', "Record was updated successfully");
         })
       );
 
       promises.push(
-        new Ember.RSVP.Promise(function(resolve) {
-          store.query('list', {
-            name: 'Rambo'
-          }).then(function(lists) {
-            assert.equal(get(lists, 'length'), 1, "Record was created successfully");
-            resolve();
-          });
+        store.query('list', {
+          name: 'Rambo'
+        }).then(function(lists) {
+          assert.equal(get(lists, 'length'), 1, "Record was created successfully");
         })
       );
 
       promises.push(
-        new Ember.RSVP.Promise(function(resolve) {
-          store.findRecord('list', 'l2').catch(function() {
-            assert.ok(true, "Record was deleted successfully");
-            resolve();
-          });
+        store.findRecord('list', 'l2').catch(function() {
+          assert.ok(true, "Record was deleted successfully");
         })
       );
 
