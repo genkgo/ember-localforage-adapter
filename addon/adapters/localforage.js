@@ -4,16 +4,18 @@ import LFQueue from 'ember-localforage-adapter/utils/queue';
 import LFCache from 'ember-localforage-adapter/utils/cache';
 
 export default DS.Adapter.extend(Ember.Evented, {
+
   defaultSerializer: 'localforage',
   queue: LFQueue.create(),
   cache: LFCache.create(),
   caching: 'model',
+  coalesceFindRequests: true,
 
-  shouldBackgroundReloadRecord: function () {
+  shouldBackgroundReloadRecord() {
     return false;
   },
 
-  shouldReloadAll: function () {
+  shouldReloadAll() {
     return true;
   },
 
@@ -26,9 +28,9 @@ export default DS.Adapter.extend(Ember.Evented, {
    * @param {DS.Model} type
    * @param {Object|String|Integer|null} id
    */
-  findRecord: function (store, type, id) {
+  findRecord(store, type, id) {
     return this._namespaceForType(type).then((namespace) => {
-      var record = namespace.records[id];
+      const record = namespace.records[id];
       
       if (!record) {
         return Ember.RSVP.reject();
@@ -38,11 +40,11 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  findAll: function (store, type) {
-    return this._namespaceForType(type).then(function (namespace) {
-      var records = [];
+  findAll(store, type) {
+    return this._namespaceForType(type).then((namespace) => {
+      const records = [];
 
-      for (var id in namespace.records) {
+      for (let id in namespace.records) {
         records.push(namespace.records[id]);
       }
 
@@ -50,15 +52,13 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  coalesceFindRequests: true,
+  findMany(store, type, ids) {
+    return this._namespaceForType(type).then((namespace) => {
+      const records = [];
 
-  findMany: function (store, type, ids) {
-    return this._namespaceForType(type).then(function (namespace) {
-      var records = [];
-      var record;
+      for (let i = 0; i < ids.length; i++) {
+        const record = namespace.records[ids[i]];
 
-      for (var i = 0; i < ids.length; i++) {
-        record = namespace.records[ids[i]];
         if (record) {
           records.push(record);
         }
@@ -68,9 +68,9 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  queryRecord: function (store, type, query) {
+  queryRecord(store, type, query) {
     return this._namespaceForType(type).then((namespace) => {
-      var record = this._query(namespace.records, query, true);
+      const record = this._query(namespace.records, query, true);
 
       if (!record) {
         return Ember.RSVP.reject();
@@ -93,26 +93,28 @@ export default DS.Adapter.extend(Ember.Evented, {
    * match records with "complete: true" and the name "foo" or "bar"
    *  { complete: true, name: /foo|bar/ }
    */
-  query: function (store, type, query) {
+  query(store, type, query) {
     return this._namespaceForType(type).then((namespace) => {
       return this._query(namespace.records, query);
     });
   },
 
-  _query: function (records, query, singleMatch) {
-    var results = [];
+  _query(records, query, singleMatch) {
+    const results = [];
 
-    for (var id in records) {
-      var record = records[id],
-        push = false;
+    for (let id in records) {
+      const record = records[id];
+      let push = false;
 
-      for (var property in query) {
-        var test = query[property];
+      for (let property in query) {
+        const test = query[property];
+
         if (Object.prototype.toString.call(test) === '[object RegExp]') {
           push = test.test(record[property]);
         } else {
           push = record[property] === test;
         }
+
         if (push === false) {
           break; // all criteria should pass
         }
@@ -134,38 +136,36 @@ export default DS.Adapter.extend(Ember.Evented, {
 
   updateRecord: updateOrCreate,
 
-  deleteRecord: function (store, type, snapshot) {
+  deleteRecord(store, type, snapshot) {
     return this.queue.attach((resolve) => {
       this._namespaceForType(type).then((namespaceRecords) => {
-        var id = snapshot.id;
+        delete namespaceRecords.records[snapshot.id];
 
-        delete namespaceRecords.records[id];
-
-        this.persistData(type, namespaceRecords).then(function () {
+        this.persistData(type, namespaceRecords).then(() => {
           resolve();
         });
       });
     });
   },
 
-  generateIdForRecord: function () {
+  generateIdForRecord() {
     return Math.random().toString(32).slice(2).substr(0, 5);
   },
 
   // private
 
-  adapterNamespace: function () {
+  adapterNamespace() {
     return this.get('namespace') || 'DS.LFAdapter';
   },
 
-  loadData: function () {
-    return window.localforage.getItem(this.adapterNamespace()).then(function (storage) {
+  loadData() {
+    return window.localforage.getItem(this.adapterNamespace()).then((storage) => {
       return storage ? storage : {};
     });
   },
 
-  persistData: function (type, data) {
-    var modelNamespace = this.modelNamespace(type);
+  persistData(type, data) {
+    const modelNamespace = this.modelNamespace(type);
     return this.loadData().then((localStorageData) => {
       if (this.caching !== 'none') {
         this.cache.set(modelNamespace, data);
@@ -177,11 +177,11 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  _namespaceForType: function (type) {
-    var namespace = this.modelNamespace(type);
+  _namespaceForType(type) {
+    const namespace = this.modelNamespace(type);
 
     if (this.caching !== 'none') {
-      var cache = this.cache.get(namespace);
+      const cache = this.cache.get(namespace);
 
       if (cache) {
         return Ember.RSVP.resolve(cache);
@@ -189,7 +189,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     }
 
     return window.localforage.getItem(this.adapterNamespace()).then((storage) => {
-      var ns = storage && storage[namespace] || { records: {} };
+      const ns = storage && storage[namespace] || { records: {} };
 
       if (this.caching === 'model') {
         this.cache.set(namespace, ns);
@@ -203,7 +203,7 @@ export default DS.Adapter.extend(Ember.Evented, {
     });
   },
 
-  modelNamespace: function (type) {
+  modelNamespace(type) {
     return type.url || type.modelName;
   }
 });
@@ -211,14 +211,14 @@ export default DS.Adapter.extend(Ember.Evented, {
 function updateOrCreate(store, type, snapshot) {
   return this.queue.attach((resolve) => {
     this._namespaceForType(type).then((namespaceRecords) => {
-      var serializer = store.serializerFor(type.modelName);
-      var recordHash = serializer.serialize(snapshot, {includeId: true});
+      const serializer = store.serializerFor(type.modelName);
+      const recordHash = serializer.serialize(snapshot, {includeId: true});
       // update(id comes from snapshot) or create(id comes from serialization)
-      var id = snapshot.id || recordHash.id;
+      const id = snapshot.id || recordHash.id;
 
       namespaceRecords.records[id] = recordHash;
 
-      this.persistData(type, namespaceRecords).then(function () {
+      this.persistData(type, namespaceRecords).then(() => {
         resolve();
       });
     });
