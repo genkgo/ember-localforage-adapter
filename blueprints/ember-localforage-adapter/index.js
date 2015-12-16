@@ -3,6 +3,6 @@
 module.exports = {
   normalizeEntityName: function() {},
   afterInstall: function() {
-    return this.addBowerPackageToProject('localforage', '~1.2.1');
+    return this.addBowerPackageToProject('localforage', '~1.3.1');
   }
 };
