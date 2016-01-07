@@ -100,7 +100,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   _query(records, query, singleMatch) {
-    const results = [];
+    const results = singleMatch ? null : [];
 
     for (let id in records) {
       const record = records[id];
@@ -121,11 +121,11 @@ export default DS.Adapter.extend(Ember.Evented, {
       }
 
       if (isMatching) {
-        results.push(record);
-      }
+        if (singleMatch) {
+          return record;
+        }
 
-      if (singleMatch) {
-        return results[0];
+        results.push(record);
       }
     }
 
