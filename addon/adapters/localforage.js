@@ -152,7 +152,7 @@ export default DS.Adapter.extend(Ember.Evented, {
   },
 
   _query: function (records, query, singleMatch) {
-    var results = [];
+    var results = singleMatch ? null : [];
 
     for (var id in records) {
       var record = records[id],
@@ -171,11 +171,11 @@ export default DS.Adapter.extend(Ember.Evented, {
       }
 
       if (push) {
-        results.push(record);
-      }
+        if (singleMatch) {
+          return record;
+        }
 
-      if (singleMatch) {
-        return results[0];
+        results.push(record);
       }
     }
 

@@ -280,12 +280,12 @@ test("queryRecord", function() {
   stop();
   run(function() {
     store.queryRecord('list', {
-      name: 'one'
+      name: 'two'
     }).then(function(list) {
-      equal(get(list, 'id'), 'l1', "id is loaded correctly");
-      equal(get(list, 'name'), 'one', "name is loaded correctly");
-      equal(get(list, 'b'), true, "b is loaded correctly");
-      equal(get(list, 'day'), 1, "day is loaded correctly");
+      equal(get(list, 'id'), 'l2', "id is loaded correctly");
+      equal(get(list, 'name'), 'two', "name is loaded correctly");
+      equal(get(list, 'b'), false, "b is loaded correctly");
+      equal(get(list, 'day'), 2, "day is loaded correctly");
       start();
     });
   });
