@@ -33,8 +33,8 @@
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.5",
     "ember-cli-test-loader": "ember-cli/ember-cli-test-loader#0.2.0",
     "ember-load-initializers": "ember-cli/ember-load-initializers#0.1.6",
-    "ember-qunit": "~0.4.10",
-    "ember-qunit-notifications": "0.0.7",
-    "qunit": "~1.18.0"
+    "qunit": "~1.18.0",
+    "ember-qunit": "^0.4.22",
+    "ember-qunit-notifications": "^0.1.0"
   }
 }
