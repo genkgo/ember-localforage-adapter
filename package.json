@@ -30,10 +30,11 @@
     "ember-cli-release": "0.2.8",
     "ember-cli-sri": "^1.2.0",
     "ember-cli-uglify": "^1.2.x",
+    "ember-cli-uuid": "0.4.1",
     "ember-data": "2.2.x",
+    "ember-disable-prototype-extensions": "^1.0.0",
     "ember-disable-proxy-controllers": "^1.0.1",
     "ember-export-application-global": "^1.0.4",
-    "ember-disable-prototype-extensions": "^1.0.0",
     "ember-try": "~0.0.8"
   },
   "description": "Store your ember application data in Mozilla's localforage.",
