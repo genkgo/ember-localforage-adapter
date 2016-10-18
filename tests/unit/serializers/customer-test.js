@@ -3,8 +3,7 @@ import {
   test
 } from 'ember-qunit';
 
-moduleFor('serializer:customer', {
-});
+moduleFor('serializer:customer');
 
 test("it is set up with embedded:always style for the 'addresses' relation", function(assert) {
   var serializer = this.subject();
