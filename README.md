@@ -1,7 +1,7 @@
 Ember Data Localforage Adapter
 ================================
 
-Store your ember application data in [Mozilla's localForage](https://github.com/mozilla/localForage). Compatible with [Ember Data 2.2.0](https://github.com/emberjs/data).
+Store your ember application data in [Mozilla's localForage](https://github.com/mozilla/localForage). Compatible with [Ember Data 3.0](https://github.com/emberjs/data).
 
 "localForage is a JavaScript library that improves the offline experience of your web app by using asynchronous storage (via IndexedDB or WebSQL where available) with a simple, localStorage-like API."
 
@@ -31,10 +31,6 @@ export default LFAdapter;
 ```
 
 For a more thorough introduction how to use this adapter, please read [Models and application data](https://developer.mozilla.org/en-US/Apps/Build/Modern_web_app_architecture/Models_and_application_data) on the MDN website of Mozilla.
-
-### Upgrade - BC Breaks
-
-Version 2.1.0 of this adapter contains backward incompatible changes in order to be compliant with Ember Data 2.0.0. There is [an upgrade guide](UPGRADE.md) available.
 
 ### Localforage Namespace
 
