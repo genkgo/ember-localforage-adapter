@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import { reject, resolve } from 'rsvp';
+import Evented from '@ember/object/evented';
 import DS from 'ember-data';
 import LFQueue from 'ember-localforage-adapter/utils/queue';
 import LFCache from 'ember-localforage-adapter/utils/cache';
-import {uuid} from 'ember-cli-uuid';
+import { v4 as uuid } from "ember-uuid";
 
-export default DS.Adapter.extend(Ember.Evented, {
+export default DS.Adapter.extend(Evented, {
 
   defaultSerializer: 'localforage',
   queue: LFQueue.create(),
@@ -34,7 +35,7 @@ export default DS.Adapter.extend(Ember.Evented, {
       const record = namespaceData.records[id];
 
       if (!record) {
-        return Ember.RSVP.reject();
+        return reject();
       }
 
       return record;
@@ -74,7 +75,7 @@ export default DS.Adapter.extend(Ember.Evented, {
       const record = this._query(namespaceData.records, query, true);
 
       if (!record) {
-        return Ember.RSVP.reject();
+        return reject();
       }
 
       return record;
@@ -176,7 +177,7 @@ export default DS.Adapter.extend(Ember.Evented, {
       const cache = this.cache.get(modelNamespace);
 
       if (cache) {
-        return Ember.RSVP.resolve(cache);
+        return resolve(cache);
       }
     }
 

@@ -1,49 +1,49 @@
-import Ember from 'ember';
-import {module, test} from 'qunit';
+import { run } from '@ember/runloop';
+import { module, test } from 'qunit';
+import { visit } from '@ember/test-helpers';
+import { setupTest } from 'ember-qunit';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import FIXTURES from '../helpers/fixtures/display-deep-model';
+import localforage from 'localforage';
 
 var App;
-var store;
-var adapter;
-var run = Ember.run;
 
-module('Display deep model', {
-  beforeEach: function (assert) {
+module('Display deep model', function(hooks) {
+  hooks.beforeEach(function (assert) {
     var done = assert.async();
     run(function () {
-      window.localforage.setItem('DS.LFAdapter', FIXTURES).then(function () {
+      localforage.setItem('DS.LFAdapter', FIXTURES).then(function () {
         done();
       });
     });
 
     run(function () {
       App = startApp();
-      store = App.__container__.lookup('service:store');
-      adapter = App.__container__.lookup('adapter:application');
-      adapter.get('cache').clear();
     });
-  },
+  });
 
-  afterEach: function () {
+  hooks.afterEach(function () {
     run(function () {
       destroyApp(App);
     });
-  }
-});
+  });
 
-test('find customer -> hour -> order', function (assert) {
-  assert.expect(4);
+  setupTest(hooks);
 
-  visit('/purchase/1');
-  andThen(function () {
-    var done = assert.async();
+  test('find customer -> hour -> order', async function (assert) {
+    assert.expect(4);
+
+    let done = assert.async();
+    let adapter = this.owner.lookup('adapter:application');
+    adapter.get('cache').clear();
+
+    await visit('/purchase/1');
     run.later(function() {
-      assert.equal(find('div.name').text(), 'credits');
-      assert.equal(find('div.amount').text(), '10');
-      assert.equal(find('div.player').text(), 'one');
-      assert.equal(find('div.ledger').text(), 'payable');
+      assert.dom('div.name').hasText('credits');
+      assert.dom('div.amount').hasText('10');
+      assert.dom('div.player').hasText('one');
+      assert.dom('div.ledger').hasText('payable');
       done();
     }, 300);
   });

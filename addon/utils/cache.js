@@ -1,8 +1,10 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
 
-export default Ember.Object.extend({
+export default EmberObject.extend({
 
-  data: Ember.Map.create(),
+  init: function () {
+    this.data = new Map();
+  },
 
   clear() {
     this.data.clear();
@@ -25,7 +27,7 @@ export default Ember.Object.extend({
   replace(data) {
     this.clear();
     
-    for (let index in data) {
+    for (let index of data) {
       this.set(index, data[index]);
     }
   }
