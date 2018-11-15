@@ -1,8 +1,9 @@
-import { reject, resolve } from 'rsvp';
+import { resolve } from 'rsvp';
 import Evented from '@ember/object/evented';
 import DS from 'ember-data';
 import LFQueue from 'ember-localforage-adapter/utils/queue';
 import LFCache from 'ember-localforage-adapter/utils/cache';
+import { NotFoundError } from 'ember-localforage-adapter/errors';
 import { v4 as uuid } from "ember-uuid";
 
 export default DS.Adapter.extend(Evented, {
@@ -35,7 +36,7 @@ export default DS.Adapter.extend(Evented, {
       const record = namespaceData.records[id];
 
       if (!record) {
-        return reject();
+        throw new NotFoundError(`No record found for ${type}:${id}`);
       }
 
       return record;
@@ -75,7 +76,7 @@ export default DS.Adapter.extend(Evented, {
       const record = this._query(namespaceData.records, query, true);
 
       if (!record) {
-        return reject();
+        throw new NotFoundError(`No record found for ${JSON.stringify(query)} of type ${type}`);
       }
 
       return record;
