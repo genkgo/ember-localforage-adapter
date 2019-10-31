@@ -4,6 +4,7 @@ import DS from 'ember-data';
 import LFQueue from 'ember-localforage-adapter/utils/queue';
 import LFCache from 'ember-localforage-adapter/utils/cache';
 import { v4 as uuid } from "ember-uuid";
+import localforage from 'localforage';
 
 export default DS.Adapter.extend(Evented, {
 
@@ -31,7 +32,7 @@ export default DS.Adapter.extend(Evented, {
    * @param {Object|String|Integer|null} id
    */
   findRecord(store, type, id) {
-    return this._getNamespaceData(type).then((namespaceData) => {
+    return this._getNamespaceData(type).then(namespaceData => {
       const record = namespaceData.records[id];
 
       if (!record) {
@@ -43,19 +44,19 @@ export default DS.Adapter.extend(Evented, {
   },
 
   findAll(store, type) {
-    return this._getNamespaceData(type).then((namespaceData) => {
+    return this._getNamespaceData(type).then(namespaceData => {
       const records = [];
 
       for (let id in namespaceData.records) {
         records.push(namespaceData.records[id]);
       }
 
-      return records;
+      return { data: records.map(record => record.data) };
     });
   },
 
   findMany(store, type, ids) {
-    return this._getNamespaceData(type).then((namespaceData) => {
+    return this._getNamespaceData(type).then(namespaceData => {
       const records = [];
 
       for (let i = 0; i < ids.length; i++) {
@@ -71,7 +72,7 @@ export default DS.Adapter.extend(Evented, {
   },
 
   queryRecord(store, type, query) {
-    return this._getNamespaceData(type).then((namespaceData) => {
+    return this._getNamespaceData(type).then(namespaceData => {
       const record = this._query(namespaceData.records, query, true);
 
       if (!record) {
@@ -96,8 +97,11 @@ export default DS.Adapter.extend(Evented, {
    *  { complete: true, name: /foo|bar/ }
    */
   query(store, type, query) {
-    return this._getNamespaceData(type).then((namespaceData) => {
-      return this._query(namespaceData.records, query);
+    return this._getNamespaceData(type).then(namespaceData => {
+      let records = this._query(namespaceData.records, query);
+      let result = { data: records.map(record => record.data) };
+
+      return result;
     });
   },
 
@@ -106,15 +110,16 @@ export default DS.Adapter.extend(Evented, {
 
     for (let id in records) {
       const record = records[id];
+      const attributes = record.data.attributes;
       let isMatching = false;
 
       for (let property in query) {
         const queryValue = query[property];
 
         if (queryValue instanceof RegExp) {
-          isMatching = queryValue.test(record[property]);
+          isMatching = queryValue.test(attributes[property]);
         } else {
-          isMatching = record[property] === queryValue;
+          isMatching = attributes[property] === queryValue;
         }
 
         if (!isMatching) {
@@ -139,8 +144,8 @@ export default DS.Adapter.extend(Evented, {
   updateRecord: updateOrCreate,
 
   deleteRecord(store, type, snapshot) {
-    return this.queue.attach((resolve) => {
-      this._getNamespaceData(type).then((namespaceData) => {
+    return this.queue.attach(resolve => {
+      this._getNamespaceData(type).then(namespaceData => {
         delete namespaceData.records[snapshot.id];
 
         this._setNamespaceData(type, namespaceData).then(() => {
@@ -159,14 +164,14 @@ export default DS.Adapter.extend(Evented, {
   _setNamespaceData(type, namespaceData) {
     const modelNamespace = this._modelNamespace(type);
 
-    return this._loadData().then((storage) => {
+    return this._loadData().then(storage => {
       if (this.caching !== 'none') {
         this.cache.set(modelNamespace, namespaceData);
       }
 
       storage[modelNamespace] = namespaceData;
 
-      return window.localforage.setItem(this._adapterNamespace(), storage);
+      return localforage.setItem(this._adapterNamespace(), storage);
     });
   },
 
@@ -181,8 +186,8 @@ export default DS.Adapter.extend(Evented, {
       }
     }
 
-    return this._loadData().then((storage) => {
-      const namespaceData = storage && storage[modelNamespace] || { records: {} };
+    return this._loadData().then(storage => {
+      const namespaceData = (storage && storage[modelNamespace]) || { records: {} };
 
       if (this.caching === 'model') {
         this.cache.set(modelNamespace, namespaceData);
@@ -197,7 +202,7 @@ export default DS.Adapter.extend(Evented, {
   },
 
   _loadData() {
-    return window.localforage.getItem(this._adapterNamespace()).then((storage) => {
+    return localforage.getItem(this._adapterNamespace()).then(storage => {
       return storage ? storage : {};
     });
   },
@@ -208,7 +213,7 @@ export default DS.Adapter.extend(Evented, {
 
   _adapterNamespace() {
     return this.get('namespace') || 'DS.LFAdapter';
-  }
+  },
 });
 
 function updateOrCreate(store, type, snapshot) {
